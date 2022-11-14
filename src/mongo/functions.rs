@@ -1,9 +1,14 @@
+use std::time::{Duration, Instant};
+
+use mongodb::{
+    bson::{doc, Document},
+    options::FindOneOptions,
+    Collection,
+};
 use rand::Rng;
-use mongodb::{ Collection, bson::{ Document, doc }, options::FindOneOptions };
-use std::time::{ Duration, Instant };
 
 pub async fn get_random_cards(
-    collection: Collection<Document>
+    collection: Collection<Document>,
 ) -> Result<(Document, Document, Document), Box<dyn FnOnce() + Send + 'static>> {
     let start = Instant::now();
     let size: u64 = collection.count_documents(None, None).await.unwrap();
@@ -16,13 +21,23 @@ pub async fn get_random_cards(
     let opt_two = FindOneOptions::builder().skip(r_numbers[1]).build();
     let opt_three = FindOneOptions::builder().skip(r_numbers[2]).build();
 
-    let query_one = collection.find_one(doc! { "released": true }, opt_one).await;
-    let query_two = collection.find_one(doc! { "released": true }, opt_two).await;
-    let query_three = collection.find_one(doc! { "released": true }, opt_three).await;
+    let query_one = collection
+        .find_one(doc! { "released": true }, opt_one)
+        .await;
+    let query_two = collection
+        .find_one(doc! { "released": true }, opt_two)
+        .await;
+    let query_three = collection
+        .find_one(doc! { "released": true }, opt_three)
+        .await;
 
     let duration: Duration = start.elapsed();
     println!("Time elapsed in expensive_function() is: {:?}", duration);
-    Ok((query_one.unwrap().unwrap(), query_two.unwrap().unwrap(), query_three.unwrap().unwrap()))
+    Ok((
+        query_one.unwrap().unwrap(),
+        query_two.unwrap().unwrap(),
+        query_three.unwrap().unwrap(),
+    ))
 }
 
 // pub fn generate_print() {

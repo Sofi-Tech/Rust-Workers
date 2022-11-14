@@ -1,7 +1,8 @@
 mod mongo;
 mod threads;
 
-use std::{ error::Error, time::Duration };
+use std::{error::Error, time::Duration};
+
 use mongo::Mongo;
 use threads::ThreadPool;
 use tokio::time::sleep;
@@ -25,5 +26,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn fibonacci(n: u32) -> u32 {
-    if n == 0 { 0 } else if n == 1 { 1 } else { fibonacci(n - 1) + fibonacci(n - 2) }
+    if n == 0 {
+        0
+    } else if n == 1 {
+        1
+    } else {
+        fibonacci(n - 1) + fibonacci(n - 2)
+    }
 }
