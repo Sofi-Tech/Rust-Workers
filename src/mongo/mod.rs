@@ -11,7 +11,7 @@ use mongodb::{
 
 pub struct Mongo {
     db: Database,
-    // client: Client,
+    client: Client,
 }
 
 impl Mongo {
@@ -27,16 +27,16 @@ impl Mongo {
         let client = Client::with_options(options)?;
         let db = client.database("Sofi");
 
-        Ok(Self { db })
+        Ok(Self { db, client })
     }
 
     pub fn get_collection(&self, collection: &str) -> Collection<Document> {
         self.db.collection(collection)
     }
 
-    // pub fn get_client(&self) -> &Client {
-    //     &self.client
-    // }
+    pub fn get_client(&self) -> &Client {
+        &self.client
+    }
 
     // pub fn get_db(&self) -> &Database {
     //     &self.db
