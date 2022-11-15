@@ -1,37 +1,168 @@
+mod canvas;
+use std::{fs::File, io::Write, thread};
+
+use canvas::Canvas;
+
 mod mongo;
-mod threads;
+use std::{
+    error::Error,
+    time::{Duration, Instant},
+};
 
-use std::{error::Error, time::Duration};
-
+use bson::Document;
+use chrono::prelude::*;
 use mongo::Mongo;
-use threads::ThreadPool;
-use tokio::time::sleep;
+use tokio::{runtime, time::sleep};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let pool = ThreadPool::new(10);
-
     let mongo_client: Mongo = Mongo::new().await.unwrap();
-    let _client = mongo_client.get_client();
-    let collection = mongo_client.get_collection("character_cards");
-    let _cards = mongo::functions::get_random_cards(collection).await;
-    for _i in 0..8000 {
-        pool.execute(|| {
-            fibonacci(5);
-        });
-    }
+    let rt = runtime::Builder::new_multi_thread()
+        .thread_name("Sofi Worker Pool")
+        .worker_threads(2)
+        .enable_all()
+        .build()
+        .unwrap();
+
+    thread_job();
+    runtime_thread_job(&mongo_client, &rt).await;
+    tokio_thread_job(&mongo_client).await;
     sleep(Duration::from_millis(1000 * 60)).await;
-    println!("100 ms have elapsed");
-    // println!("{:?}", _cards);
+    println!("60s have elapsed");
     Ok(())
 }
 
-fn fibonacci(n: u32) -> u32 {
-    if n == 0 {
-        0
-    } else if n == 1 {
-        1
-    } else {
-        fibonacci(n - 1) + fibonacci(n - 2)
+// sync method, fastest cuz its not async
+fn thread_job() {
+    let mut start1 = Instant::now();
+    for i in 0..100 {
+        let ins = Instant::now();
+        if i == 0 {
+            start1 = Instant::now();
+        }
+        thread::spawn(|| {
+            let mut canvas = Canvas::new(2560, 1280);
+            canvas.scale(1.2, 1.2);
+            canvas.move_to(36.0, 48.0);
+            canvas.quad_to(660.0, 880.0, 1200.0, 360.0);
+            canvas.translate(10.0, 10.0);
+            canvas.set_line_width(20.0);
+            canvas.stroke();
+            canvas.save();
+            canvas.move_to(30.0, 90.0);
+            canvas.line_to(110.0, 20.0);
+            canvas.line_to(240.0, 130.0);
+            canvas.line_to(60.0, 130.0);
+            canvas.line_to(190.0, 20.0);
+            canvas.line_to(270.0, 90.0);
+            canvas.fill();
+            let d = canvas.data();
+            let name = format!("./out/{}.png", Utc::now().timestamp_millis());
+            let mut file = File::create(name).unwrap();
+            let bytes = d.as_bytes();
+            file.write_all(bytes).unwrap();
+        });
+        let duration: Duration = ins.elapsed();
+        println!("1 Image done: {:?}", duration);
+        if i == 99 {
+            let duration: Duration = start1.elapsed();
+            println!("Loop 1 is: {:?} time: {}", duration, Utc::now().timestamp());
+        }
+    }
+}
+
+// async method one using multi-threaded runtime
+async fn runtime_thread_job(mongo_client: &Mongo, rt: &runtime::Runtime) {
+    let mut start1 = Instant::now();
+
+    for i in 0..100 {
+        let ins = Instant::now();
+        if i == 0 {
+            start1 = Instant::now();
+        }
+        let client_ref = mongo_client.get_client().clone();
+
+        let handle = rt.spawn(async move {
+            let collection = client_ref
+                .database("Sofi")
+                .collection::<Document>("character_cards");
+            let _doc = mongo::functions::get_random_cards(collection).await;
+            let mut canvas = Canvas::new(2560, 1280);
+            canvas.scale(1.2, 1.2);
+            canvas.move_to(36.0, 48.0);
+            canvas.quad_to(660.0, 880.0, 1200.0, 360.0);
+            canvas.translate(10.0, 10.0);
+            canvas.set_line_width(20.0);
+            canvas.stroke();
+            canvas.save();
+            canvas.move_to(30.0, 90.0);
+            canvas.line_to(110.0, 20.0);
+            canvas.line_to(240.0, 130.0);
+            canvas.line_to(60.0, 130.0);
+            canvas.line_to(190.0, 20.0);
+            canvas.line_to(270.0, 90.0);
+            canvas.fill();
+            let d = canvas.data();
+            let name = format!("./out/{}.png", Utc::now().timestamp_millis());
+            let mut file = File::create(name).unwrap();
+            let bytes = d.as_bytes();
+            file.write_all(bytes).unwrap();
+        });
+
+        let _ = tokio::time::timeout(Duration::from_secs(5), handle).await;
+        let duration: Duration = ins.elapsed();
+        println!("1 Image done: {:?}", duration);
+        if i == 99 {
+            let duration: Duration = start1.elapsed();
+            println!("Loop 1 is: {:?} time: {}", duration, Utc::now().timestamp());
+        }
+    }
+}
+
+// async method two using tokio spawn only
+async fn tokio_thread_job(mongo_client: &Mongo) {
+    let mut start1 = Instant::now();
+    // slower since it requires windows os to spawn
+    for i in 0..100 {
+        let ins = Instant::now();
+        if i == 0 {
+            start1 = Instant::now();
+        }
+        let client_ref = mongo_client.get_client().clone();
+
+        let handle = tokio::spawn(async move {
+            let collection = client_ref
+                .database("Sofi")
+                .collection::<Document>("character_cards");
+            let _doc = mongo::functions::get_random_cards(collection).await;
+            let mut canvas = Canvas::new(2560, 1280);
+            canvas.scale(1.2, 1.2);
+            canvas.move_to(36.0, 48.0);
+            canvas.quad_to(660.0, 880.0, 1200.0, 360.0);
+            canvas.translate(10.0, 10.0);
+            canvas.set_line_width(20.0);
+            canvas.stroke();
+            canvas.save();
+            canvas.move_to(30.0, 90.0);
+            canvas.line_to(110.0, 20.0);
+            canvas.line_to(240.0, 130.0);
+            canvas.line_to(60.0, 130.0);
+            canvas.line_to(190.0, 20.0);
+            canvas.line_to(270.0, 90.0);
+            canvas.fill();
+            let d = canvas.data();
+            let name = format!("./out/{}.png", Utc::now().timestamp_millis());
+            let mut file = File::create(name).unwrap();
+            let bytes = d.as_bytes();
+            file.write_all(bytes).unwrap();
+        });
+
+        let _ = tokio::time::timeout(Duration::from_secs(5), handle).await;
+        let duration: Duration = ins.elapsed();
+        println!("2 Image done: {:?}", duration);
+        if i == 99 {
+            let duration: Duration = start1.elapsed();
+            println!("Loop 1 is: {:?} time: {}", duration, Utc::now().timestamp());
+        }
     }
 }

@@ -1,5 +1,3 @@
-use std::time::{Duration, Instant};
-
 use mongodb::{
     bson::{doc, Document},
     options::FindOneOptions,
@@ -8,7 +6,7 @@ use mongodb::{
 use rand::Rng;
 
 pub async fn get_random_cards(collection: Collection<Document>) -> (Document, Document, Document) {
-    let start = Instant::now();
+    // let start = Instant::now();
     let size: u64 = collection.count_documents(None, None).await.unwrap();
 
     if size < 3 {
@@ -29,8 +27,8 @@ pub async fn get_random_cards(collection: Collection<Document>) -> (Document, Do
         .find_one(doc! { "released": true }, opt_three)
         .await;
 
-    let duration: Duration = start.elapsed();
-    println!("Time elapsed in expensive_function() is: {:?}", duration);
+    // let duration: Duration = start.elapsed();
+    // println!("Time elapsed in expensive_function() is: {:?}", duration);
     (
         query_one.unwrap().unwrap(),
         query_two.unwrap().unwrap(),

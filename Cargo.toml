@@ -8,10 +8,12 @@ edition = "2021"
 [dependencies]
 mongodb = "2.1"
 bson = { version = "2", features = ["chrono-0_4"] } # Needed for using chrono datetime in doc
-tokio = "1"
+tokio = { version = "1.21.2" }
 chrono = "0.4" # Used for setting DateTimes
 serde = "1" # Used in the Map Data into Structs section
 dotenv = "0.15.0"
 zmq = "0.10.0"
 dotenv_codegen = "0.15.0"
 rand = "0.8.5"
+skia-safe = { git = "https://github.com/rust-skia/rust-skia", branch = "master" }
+
