@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mongo_client: Mongo = Mongo::new().await.unwrap();
     let rt = runtime::Builder::new_multi_thread()
         .thread_name("Sofi Worker Pool")
-        .worker_threads(2)
+        .worker_threads(12)
         .enable_all()
         .build()
         .unwrap();
