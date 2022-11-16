@@ -27,29 +27,32 @@ async fn main() -> Result<(), Box<dyn Error>> {
     )
     .await;
 
-    let mut frame = File::open("./frames/Blue.png").unwrap();
+    let mut frame = File::open("./frames/Blue No Space.png").unwrap();
     let mut frame_bytes = Vec::new();
     frame.read_to_end(&mut frame_bytes).unwrap();
 
     let mut image_one = Canvas::new(314, 524);
-    image_one.draw_image(&buf, 6.0, 4.0);
-    image_one.draw_image(&frame_bytes, 0.0, 0.0);
+    image_one.draw_image(&buf, (6, 4));
+    // 301, 465
+    image_one.draw_image(&frame_bytes, (0, 0));
+    // 314, 524
 
     let mut image_two = Canvas::new(314, 524);
-    image_two.draw_image(&buf, 6.0, 4.0);
-    image_two.draw_image(&frame_bytes, 0.0, 0.0);
+    image_two.draw_image(&buf, (6, 4));
+    image_two.draw_image(&frame_bytes, (0, 0));
 
     let mut image_three = Canvas::new(314, 524);
-    image_three.draw_image(&buf, 6.0, 4.0);
-    image_three.draw_image(&frame_bytes, 0.0, 0.0);
+    image_three.draw_image(&buf, (6, 4));
+    image_three.draw_image(&frame_bytes, (0, 0));
 
     let mut canvas = Canvas::new(1_008, 524);
-    canvas.draw_image(image_one.data().as_bytes(), 1.0, 1.0);
-    canvas.draw_image(image_two.data().as_bytes(), 347.0, 1.0);
-    canvas.draw_image(image_three.data().as_bytes(), 692.0, 1.0);
+    canvas.draw_image(image_one.data().as_bytes(), (1, 1));
+    canvas.draw_image(image_two.data().as_bytes(), (347, 1));
+    canvas.draw_image(image_three.data().as_bytes(), (692, 1));
 
     let d = canvas.data();
-    let name = format!("./out/{}.png", Utc::now().timestamp_millis());
+    // let name = format!("./out/{}.png", Utc::now().timestamp_millis());
+    let name = "./out/drop.png";
     let mut file = File::create(name).unwrap();
     let bytes = d.as_bytes();
     file.write_all(bytes).unwrap();
