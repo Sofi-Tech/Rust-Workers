@@ -4,5 +4,5 @@
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
-  "cSpell.words": ["bson", "reqwest"]
+  "cSpell.words": ["bson", "DECR", "reqwest"]
 }
