@@ -1,3 +1,5 @@
+use std::{fs::File, io::Read};
+
 use skia_safe::{
     font_style::{Slant, Weight, Width},
     Font, FontStyle, Typeface,
@@ -11,8 +13,28 @@ pub async fn fetch_buffer(url: &str) -> Vec<u8> {
     buffer
 }
 
+// TODO: take card struct as input and get image url, frame url and other info
+// required for draw_card from it
+pub async fn generate_drop() -> Canvas {
+    let buf = fetch_buffer(
+        "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg",
+    )
+    .await;
+
+    let mut frame = File::open("./frames/blue-drop.png").unwrap();
+    let mut frame_bytes = Vec::new();
+    frame.read_to_end(&mut frame_bytes).unwrap();
+
+    let canvas = Canvas::new(1_008, 524);
+
+    let image_one = draw_card(canvas, &buf, &frame_bytes, 1);
+    let image_two = draw_card(image_one, &buf, &frame_bytes, 347);
+    let image_three = draw_card(image_two, &buf, &frame_bytes, 692);
+    image_three
+}
+
+// TODO: take card struct as input and get gen, name, series from it
 pub fn draw_card(mut canvas: Canvas, image: &[u8], frame: &[u8], dx: i32) -> Canvas {
-    // let mut canvas = Canvas::new(314, 524);
     canvas.draw_image(image, (6 + dx, 4));
     canvas.draw_image(frame, (0 + dx, 0));
     canvas.fill_text(

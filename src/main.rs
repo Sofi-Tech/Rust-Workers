@@ -1,12 +1,8 @@
 #![allow(dead_code)]
 mod canvas;
-use std::{
-    fs::File,
-    io::{Read, Write},
-    thread,
-};
+use std::{fs::File, io::Write, thread};
 
-use canvas::{functions::draw_card, Canvas};
+use canvas::{functions::generate_drop, Canvas};
 
 mod mongo;
 use std::{
@@ -15,33 +11,16 @@ use std::{
 };
 
 use bson::Document;
-use canvas::functions::fetch_buffer;
 use chrono::prelude::*;
 use mongo::Mongo;
 use tokio::runtime;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let buf = fetch_buffer(
-        "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg",
-    )
-    .await;
-
-    let mut frame = File::open("./frames/blue-drop.png").unwrap();
-    let mut frame_bytes = Vec::new();
-    frame.read_to_end(&mut frame_bytes).unwrap();
-
-    let canvas = Canvas::new(1_008, 524);
-
-    let image_one = draw_card(canvas, &buf, &frame_bytes, 1);
-    let image_two = draw_card(image_one, &buf, &frame_bytes, 347);
-    let mut image_three = draw_card(image_two, &buf, &frame_bytes, 692);
-
-    let d = image_three.data();
-    // let name = format!("./out/{}.png", Utc::now().timestamp_millis());
-    let name = "./out/drop.png";
+    let drop_image = generate_drop().await.data();
+    let name = format!("./out/{}.png", Utc::now().timestamp_millis());
     let mut file = File::create(name).unwrap();
-    let bytes = d.as_bytes();
+    let bytes = drop_image.as_bytes();
     file.write_all(bytes).unwrap();
 
     // let mongo_client: Mongo = Mongo::new().await.unwrap();
