@@ -22,8 +22,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
         "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg",
     )
     .await;
-    let mut canvas = Canvas::new(2560, 1280);
-    canvas.draw_image(&buf, 0.0);
+
+    let mut image_one = Canvas::new(314, 524);
+    image_one.draw_image(&buf, 6.0, 4.0);
+
+    let mut image_two = Canvas::new(314, 524);
+    image_two.draw_image(&buf, 6.0, 4.0);
+
+    let mut image_three = Canvas::new(314, 524);
+    image_three.draw_image(&buf, 6.0, 4.0);
+
+    let mut canvas = Canvas::new(1_008, 524);
+    canvas.draw_image(&image_one.data().as_bytes(), 1.0, 1.0);
+    canvas.draw_image(&image_two.data().as_bytes(), 347.0, 1.0);
+    canvas.draw_image(&image_three.data().as_bytes(), 692.0, 1.0);
+
     let d = canvas.data();
     let name = format!("./out/{}.png", Utc::now().timestamp_millis());
     let mut file = File::create(name).unwrap();

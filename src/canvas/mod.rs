@@ -115,9 +115,9 @@ impl Canvas {
     }
 
     #[inline]
-    pub fn draw_image(&mut self, data: &[u8], x: f32) {
+    pub fn draw_image(&mut self, data: &[u8], x: f32, y: f32) {
         let img_g = ImageGenerator::from_encoded(Data::new_copy(data)).unwrap();
         let img = Image::from_generator(img_g).unwrap();
-        self.surface.canvas().draw_image(img, (x, 0.0), None);
+        self.surface.canvas().draw_image(img, (x, y), None);
     }
 }
