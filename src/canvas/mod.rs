@@ -1,7 +1,7 @@
 use std::mem;
 pub mod functions;
 use skia_safe::{
-    Color, Data, EncodedImageFormat, Image, ImageGenerator, Paint, PaintStyle, Path, Surface,
+    Color, Data, EncodedImageFormat, Image, ImageGenerator, Paint, PaintStyle, Path, Point, Surface,
 };
 
 pub struct Canvas {
@@ -28,17 +28,17 @@ impl Canvas {
 
     #[inline]
     pub fn save(&mut self) {
-        self.canvas().save();
+        self.surface.canvas().save();
     }
 
     #[inline]
     pub fn translate(&mut self, dx: f32, dy: f32) {
-        self.canvas().translate((dx, dy));
+        self.surface.canvas().translate((dx, dy));
     }
 
     #[inline]
     pub fn scale(&mut self, sx: f32, sy: f32) {
-        self.canvas().scale((sx, sy));
+        self.surface.canvas().scale((sx, sy));
     }
 
     #[inline]
@@ -115,9 +115,9 @@ impl Canvas {
     }
 
     #[inline]
-    pub fn draw_image(&mut self, data: &[u8], x: f32, y: f32) {
+    pub fn draw_image(&mut self, data: &[u8], left_top: impl Into<Point>) {
         let img_g = ImageGenerator::from_encoded(Data::new_copy(data)).unwrap();
         let img = Image::from_generator(img_g).unwrap();
-        self.surface.canvas().draw_image(img, (x, y), None);
+        self.surface.canvas().draw_image(img, left_top, None);
     }
 }
