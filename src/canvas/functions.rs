@@ -36,7 +36,7 @@ pub async fn generate_drop() -> Canvas {
 // TODO: take card struct as input and get gen, name, series from it
 pub fn draw_card(mut canvas: Canvas, image: &[u8], frame: &[u8], dx: i32) -> Canvas {
     canvas.draw_image(image, (6 + dx, 4));
-    canvas.draw_image(frame, (0 + dx, 0));
+    canvas.draw_image(frame, (dx, 0));
     canvas.fill_text(
         "G1",
         (16 + dx, 450),
