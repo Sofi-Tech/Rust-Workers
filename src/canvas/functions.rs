@@ -27,6 +27,12 @@ pub async fn generate_drop() -> Canvas {
 
     let canvas = Canvas::new(1_008, 524);
 
+    // Here we are passing canvas to the draw_card fn so it's ownership will be
+    // lost. We can't use it in the next line. So instead we return it from the
+    // function and pass it again in 2nd function. This way we don't need to clone
+    // or add any lifetime and we can use the canvas in the next line.
+    // Not sure if adding lifetime will have any issue or something so before I do
+    // research on it, will do it this way.
     let image_one = draw_card(canvas, &buf, &frame_bytes, 1);
     let image_two = draw_card(image_one, &buf, &frame_bytes, 347);
     let image_three = draw_card(image_two, &buf, &frame_bytes, 692);

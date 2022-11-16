@@ -13,13 +13,9 @@ pub struct Canvas {
 
 impl Canvas {
     pub fn new(width: i32, height: i32) -> Canvas {
-        let mut surface = Surface::new_raster_n32_premul((width, height)).expect("no surface!");
+        let surface = Surface::new_raster_n32_premul((width, height)).expect("no surface!");
         let path = Path::new();
-        let mut paint = Paint::default();
-        paint.set_color(Color::BLACK);
-        paint.set_anti_alias(true);
-        paint.set_stroke_width(1.0);
-        surface.canvas().clear(Color::WHITE);
+        let paint = Paint::default();
         Canvas {
             surface,
             path,
