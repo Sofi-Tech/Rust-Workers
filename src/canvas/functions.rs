@@ -15,13 +15,10 @@ pub async fn fetch_buffer(url: &str) -> Vec<u8> {
 
 // TODO: take card struct as input and get image url, frame url and other info
 // required for draw_card from it
-pub async fn generate_drop() -> Canvas {
-    let buf = fetch_buffer(
-        "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg",
-    )
-    .await;
+pub async fn generate_drop(image_url: &str, frame_url: &str) -> Canvas {
+    let buf = fetch_buffer(image_url).await;
 
-    let mut frame = File::open("./frames/blue-drop.png").unwrap();
+    let mut frame = File::open(frame_url).unwrap();
     let mut frame_bytes = Vec::new();
     frame.read_to_end(&mut frame_bytes).unwrap();
 
@@ -79,4 +76,20 @@ pub fn draw_card(mut canvas: Canvas, image: &[u8], frame: &[u8], dx: i32) -> Can
         ),
     );
     canvas
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn generate_and_save_the_drop_image() {
+        let _canvas = generate_drop(
+            "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg",
+            "./frames/cyan-drop.png",
+        )
+        .await;
+
+        //TODO: compare the bytes with an existing image
+    }
 }

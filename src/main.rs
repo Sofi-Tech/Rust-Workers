@@ -17,7 +17,13 @@ use tokio::runtime;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let drop_image = generate_drop().await.data();
+    let drop_image = generate_drop(
+        "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg",
+        "./frames/blue-drop.png",
+    )
+    .await
+    .data();
+
     let name = format!("./out/{}.png", Utc::now().timestamp_millis());
     let mut file = File::create(name).unwrap();
     let bytes = drop_image.as_bytes();
