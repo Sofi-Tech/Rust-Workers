@@ -17,7 +17,6 @@ use tokio::runtime;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let start = Instant::now();
     let drop_image = generate_drop(
         "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg",
         "./frames/blue-drop.png",
@@ -25,16 +24,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     .await
     .data();
 
-    let gen_end = Instant::now();
-    println!("Image generate took: {:?}\n", gen_end - start);
-
     let name = format!("./out/{}.png", Utc::now().timestamp_millis());
     let mut file = File::create(name).unwrap();
     let bytes = drop_image.as_bytes();
     file.write_all(bytes).unwrap();
-
-    let end = Instant::now();
-    println!("Total time: {:?}\n", end - start);
 
     // let mongo_client: Mongo = Mongo::new().await.unwrap();
     // let rt = runtime::Builder::new_multi_thread()

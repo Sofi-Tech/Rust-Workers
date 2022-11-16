@@ -72,19 +72,3 @@ jobs:
           profile: minimal
 
       - run: cargo test
-
-  cargo-time:
-    name: Cargo time
-    if: >-
-      ${{ !contains(github.event.head_commit.message, 'chore: ') }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-
-      - run: cargo run --release
