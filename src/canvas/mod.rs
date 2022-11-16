@@ -1,6 +1,8 @@
 use std::mem;
-
-use skia_safe::{Color, Data, EncodedImageFormat, Paint, PaintStyle, Path, Surface};
+pub mod functions;
+use skia_safe::{
+    Color, Data, EncodedImageFormat, Image, ImageGenerator, Paint, PaintStyle, Path, Surface,
+};
 
 pub struct Canvas {
     surface: Surface,
@@ -100,5 +102,23 @@ impl Canvas {
     #[inline]
     fn canvas(&mut self) -> &mut skia_safe::Canvas {
         self.surface.canvas()
+    }
+
+    #[inline]
+    pub fn clear(&mut self) {
+        self.surface.canvas().clear(Color::WHITE);
+    }
+
+    #[inline]
+    pub fn set_color(&mut self, color: Color) {
+        self.paint.set_color(color);
+    }
+
+    #[inline]
+    pub fn draw_image(&mut self, data: &[u8], x: f32) {
+        let img_g = ImageGenerator::from_encoded(Data::new_copy(data)).unwrap();
+        let img = Image::from_generator(img_g).unwrap();
+        // let a = image::load_from_memory(data).unwrap();
+        self.surface.canvas().draw_image(img, (x, 0.0), None);
     }
 }
