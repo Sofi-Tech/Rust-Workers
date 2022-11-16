@@ -71,63 +71,20 @@ jobs:
         with:
           profile: minimal
 
-      - name: Rust tests
-        run: cargo test --tests -- -Zunstable-options --report-time  | tee comment.md
+      - run: cargo test
 
-      - name: Add comment in the file
-        run: |
-          echo "<!-- CI COMMENT -->" >> comment.md
-      - name: Find PR Comment
-        id: comment
-        if: github.event_name == 'pull_request'
-        uses: peter-evans/find-comment@v2
+  cargo-time:
+    name: Cargo time
+    if: >-
+      ${{ !contains(github.event.head_commit.message, 'chore: ') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: '<!-- CI COMMENT -->'
+          submodules: true
 
-      - name: Create or update PR comment
-        if: github.event_name == 'pull_request'
-        uses: peter-evans/create-or-update-comment@v2
-        continue-on-error: true
+      - uses: actions-rs/toolchain@v1
         with:
-          comment-id: ${{ steps.comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body-file: 'comment.md'
-          edit-mode: replace
+          profile: minimal
 
-  # final:
-  #   name: Add Comment
-  #   needs: [cargo-fmt, cargo-clippy, cargo-test]
-  #   permissions:
-  #     contents: read
-  #     pull-requests: write
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Check cancellation
-  #       id: cancelled
-  #       if: needs.cargo-fmt.result == 'cancelled' || needs.cargo-clippy.result == 'cancelled' || needs.cargo-test.result == 'cancelled'
-  #       run: echo "cancelled=true" >> $GITHUB_OUTPUT
-
-  #     - name: Add comment in the file
-  #       run: |
-  #         echo "<!-- CI COMMENT -->" >> comment.md
-
-  #     - name: Find PR Comment
-  #       id: comment
-  #       if: github.event_name == 'pull_request' && steps.cancelled.outputs.cancelled != 'true'
-  #       uses: peter-evans/find-comment@v2
-  #       with:
-  #         issue-number: ${{ github.event.pull_request.number }}
-  #         comment-author: 'github-actions[bot]'
-  #         body-includes: '<!-- CI COMMENT -->'
-
-  #     - name: Create or update PR comment
-  #       if: github.event_name == 'pull_request' && steps.cancelled.outputs.cancelled != 'true'
-  #       uses: peter-evans/create-or-update-comment@v2
-  #       continue-on-error: true
-  #       with:
-  #         comment-id: ${{ steps.comment.outputs.comment-id }}
-  #         issue-number: ${{ github.event.pull_request.number }}
-  #         body-file: 'comment.md'
-  #         edit-mode: replace
+      - run: cargo run --release
