@@ -35,8 +35,7 @@ pub async fn generate_drop() -> Canvas {
     // research on it, will do it this way.
     let image_one = draw_card(canvas, &buf, &frame_bytes, 1);
     let image_two = draw_card(image_one, &buf, &frame_bytes, 347);
-    let image_three = draw_card(image_two, &buf, &frame_bytes, 692);
-    image_three
+    draw_card(image_two, &buf, &frame_bytes, 692)
 }
 
 // TODO: take card struct as input and get gen, name, series from it
