@@ -1,7 +1,8 @@
 use std::mem;
 pub mod functions;
 use skia_safe::{
-    Color, Data, EncodedImageFormat, Image, ImageGenerator, Paint, PaintStyle, Path, Point, Surface,
+    Color, Data, EncodedImageFormat, Font, Image, ImageGenerator, Paint, PaintStyle, Path, Point,
+    Surface,
 };
 
 pub struct Canvas {
@@ -119,5 +120,10 @@ impl Canvas {
         let img_g = ImageGenerator::from_encoded(Data::new_copy(data)).unwrap();
         let img = Image::from_generator(img_g).unwrap();
         self.surface.canvas().draw_image(img, left_top, None);
+    }
+
+    pub fn fill_text(&mut self, text: &str, origin: impl Into<Point>, font: &Font) {
+        let paint = &self.paint;
+        self.surface.canvas().draw_str(text, origin, font, paint);
     }
 }

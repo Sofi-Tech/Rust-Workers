@@ -6,7 +6,7 @@ use std::{
     thread,
 };
 
-use canvas::Canvas;
+use canvas::{functions::draw_card, Canvas};
 
 mod mongo;
 use std::{
@@ -31,19 +31,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut frame_bytes = Vec::new();
     frame.read_to_end(&mut frame_bytes).unwrap();
 
-    let mut image_one = Canvas::new(314, 524);
-    image_one.draw_image(&buf, (6, 4));
-    // 301, 465
-    image_one.draw_image(&frame_bytes, (0, 0));
-    // 314, 524
+    let mut image_one = draw_card(&buf, &frame_bytes);
 
-    let mut image_two = Canvas::new(314, 524);
-    image_two.draw_image(&buf, (6, 4));
-    image_two.draw_image(&frame_bytes, (0, 0));
+    let mut image_two = draw_card(&buf, &frame_bytes);
 
-    let mut image_three = Canvas::new(314, 524);
-    image_three.draw_image(&buf, (6, 4));
-    image_three.draw_image(&frame_bytes, (0, 0));
+    let mut image_three = draw_card(&buf, &frame_bytes);
 
     let mut canvas = Canvas::new(1_008, 524);
     canvas.draw_image(image_one.data().as_bytes(), (1, 1));
