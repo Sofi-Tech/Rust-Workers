@@ -11,13 +11,13 @@ pub async fn fetch_buffer(url: &str) -> Vec<u8> {
     buffer
 }
 
-pub fn draw_card(image: &[u8], frame: &[u8]) -> Canvas {
-    let mut image_one = Canvas::new(314, 524);
-    image_one.draw_image(image, (6, 4));
-    image_one.draw_image(frame, (0, 0));
-    image_one.fill_text(
+pub fn draw_card(mut canvas: Canvas, image: &[u8], frame: &[u8], dx: i32) -> Canvas {
+    // let mut canvas = Canvas::new(314, 524);
+    canvas.draw_image(image, (6 + dx, 4));
+    canvas.draw_image(frame, (0 + dx, 0));
+    canvas.fill_text(
         "G1",
-        (16, 450),
+        (16 + dx, 450),
         &Font::from_typeface(
             Typeface::new(
                 "Roboto",
@@ -27,9 +27,9 @@ pub fn draw_card(image: &[u8], frame: &[u8]) -> Canvas {
             29.0,
         ),
     );
-    image_one.fill_text(
+    canvas.fill_text(
         "Gojo Satoru",
-        (14, 480),
+        (14 + dx, 480),
         &Font::from_typeface(
             Typeface::new(
                 "Roboto",
@@ -39,9 +39,9 @@ pub fn draw_card(image: &[u8], frame: &[u8]) -> Canvas {
             28.0,
         ),
     );
-    image_one.fill_text(
+    canvas.fill_text(
         "Jujutsu Kaisen",
-        (14, 507),
+        (14 + dx, 507),
         &Font::from_typeface(
             Typeface::new(
                 "Roboto",
@@ -51,5 +51,5 @@ pub fn draw_card(image: &[u8], frame: &[u8]) -> Canvas {
             22.0,
         ),
     );
-    image_one
+    canvas
 }

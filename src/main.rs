@@ -27,22 +27,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
     )
     .await;
 
-    let mut frame = File::open("./frames/Blue No Space.png").unwrap();
+    let mut frame = File::open("./frames/blue-drop.png").unwrap();
     let mut frame_bytes = Vec::new();
     frame.read_to_end(&mut frame_bytes).unwrap();
 
-    let mut image_one = draw_card(&buf, &frame_bytes);
+    let canvas = Canvas::new(1_008, 524);
 
-    let mut image_two = draw_card(&buf, &frame_bytes);
+    let image_one = draw_card(canvas, &buf, &frame_bytes, 1);
+    let image_two = draw_card(image_one, &buf, &frame_bytes, 347);
+    let mut image_three = draw_card(image_two, &buf, &frame_bytes, 692);
 
-    let mut image_three = draw_card(&buf, &frame_bytes);
-
-    let mut canvas = Canvas::new(1_008, 524);
-    canvas.draw_image(image_one.data().as_bytes(), (1, 1));
-    canvas.draw_image(image_two.data().as_bytes(), (347, 1));
-    canvas.draw_image(image_three.data().as_bytes(), (692, 1));
-
-    let d = canvas.data();
+    let d = image_three.data();
     // let name = format!("./out/{}.png", Utc::now().timestamp_millis());
     let name = "./out/drop.png";
     let mut file = File::create(name).unwrap();
