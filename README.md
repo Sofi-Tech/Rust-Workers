@@ -2,11 +2,35 @@
 
 Blazingly Fast..!
 
-## Running
+## Contribution Guideline
 
-```cli
-cargo run --bin rust_worker
+Create an `.env` file in the root of the project and add your mongodb uri to it.
+
+```env
+MONGODB_URI=<your-mongo-uri>
 ```
 
-# Building
-follow: https://github.com/rust-skia/rust-skia#building for skia rust building
+### Running
+
+```bash
+cargo run
+```
+
+### Testing
+
+```bash
+cargo test
+```
+
+### Benchmarking
+
+```bash
+cargo bench
+```
+
+### Formatting and Linting
+
+```bash
+cargo fmt
+cargo clippy
+```
