@@ -118,7 +118,6 @@ impl Canvas {
     pub fn draw_image(&mut self, data: &[u8], x: f32) {
         let img_g = ImageGenerator::from_encoded(Data::new_copy(data)).unwrap();
         let img = Image::from_generator(img_g).unwrap();
-        // let a = image::load_from_memory(data).unwrap();
         self.surface.canvas().draw_image(img, (x, 0.0), None);
     }
 }

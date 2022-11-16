@@ -11,9 +11,8 @@ use tokio::try_join;
 pub async fn get_random_cards(collection: Collection<Document>) -> (Document, Document, Document) {
     let start = Instant::now();
     let size: u64 = collection.count_documents(None, None).await.unwrap();
-    if size < 3 {
-        panic!("Not enough cards in the database!");
-    }
+
+    assert!(size >= 3, "Not enough cards in the database!");
     let r_numbers = random_numbers(size);
     let (one, two, three) = get_three_cards(&collection, r_numbers).await;
     let duration: Duration = start.elapsed();
@@ -46,6 +45,20 @@ fn random_numbers(max: u64) -> Vec<u64> {
             continue;
         }
     }
-    // println!("{:?}", numbers);
     numbers
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn returns_tree_unique_random_numbers() {
+        // using smaller range to test uniqueness
+        let numbers = random_numbers(5);
+        assert_eq!(numbers.len(), 3);
+        assert_ne!(numbers[0], numbers[1]);
+        assert_ne!(numbers[0], numbers[2]);
+        assert_ne!(numbers[1], numbers[2]);
+    }
 }
