@@ -181,7 +181,7 @@ jobs:
         if: always()
         run: |
           echo "<details>" >> comment.md
-          echo "<summery>Test Report</summery>\n" >> comment.md
+          echo "<summary>Test Report</summary>" >> comment.md
           cat report/test.txt >> comment.md
           echo "</details>" >> comment.md
 
