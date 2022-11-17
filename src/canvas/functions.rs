@@ -8,8 +8,11 @@ use skia_safe::{
 use super::Canvas;
 
 pub struct Card {
-    pub image_url: String,
+    pub image: Vec<u8>,
     pub frame_url: String,
+    pub gen: i32,
+    pub name: String,
+    pub series: String,
 }
 
 pub async fn fetch_buffer(url: &str) -> Vec<u8> {
@@ -36,16 +39,15 @@ pub async fn generate_drop(cards: (Card, Card, Card)) -> Canvas {
 
 // TODO: take card struct as input and get gen, name, series from it
 pub async fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
-    let image = fetch_buffer(&card.image_url).await;
-
     let mut frame = File::open(card.frame_url).unwrap();
     let mut frame_bytes = Vec::new();
+    let gen_text = format!("G{}", card.gen);
     frame.read_to_end(&mut frame_bytes).unwrap();
 
-    canvas.draw_image(&image, (6 + dx, 4));
+    canvas.draw_image(&card.image, (6 + dx, 4));
     canvas.draw_image(&frame_bytes, (dx, 0));
     canvas.fill_text(
-        "G1",
+        &gen_text,
         (16 + dx, 450),
         &Font::from_typeface(
             Typeface::new(
@@ -57,7 +59,7 @@ pub async fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
         ),
     );
     canvas.fill_text(
-        "Rose",
+        &card.name,
         (14 + dx, 480),
         &Font::from_typeface(
             Typeface::new(
@@ -69,7 +71,7 @@ pub async fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
         ),
     );
     canvas.fill_text(
-        "Blackpink",
+        &card.series,
         (14 + dx, 507),
         &Font::from_typeface(
             Typeface::new(
@@ -91,22 +93,31 @@ mod tests {
     async fn generate_and_save_the_drop_image() {
         generate_drop((
             Card {
-                image_url:
+                image:
                     "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
                         .to_string(),
                 frame_url: "./frames/yellow-drop.png".to_string(),
+                gen: 1,
+                name: "Rose".to_string(),
+                series: "Blackpink".to_string(),
             },
             Card {
-                image_url:
+                image:
                     "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
                         .to_string(),
                 frame_url: "./frames/yellow-drop.png".to_string(),
+                gen: 1,
+                name: "Rose".to_string(),
+                series: "Blackpink".to_string(),
             },
             Card {
-                image_url:
+                image:
                     "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
                         .to_string(),
                 frame_url: "./frames/yellow-drop.png".to_string(),
+                gen: 1,
+                name: "Rose".to_string(),
+                series: "Blackpink".to_string(),
             },
         ))
         .await;
