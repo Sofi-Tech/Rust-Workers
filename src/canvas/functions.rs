@@ -114,7 +114,7 @@ mod tests {
             },
             347,
         );
-        let mut canvas = draw_card(
+        let _canvas = draw_card(
             canvas,
             Card {
                 image: image_three,
@@ -126,13 +126,13 @@ mod tests {
             692,
         );
 
-        if env::var("CI").is_ok() {
-            let drop_image = canvas.data();
+        // if env::var("CI").is_ok() {
+        //     let drop_image = canvas.data();
 
-            let name = "./drop.png";
-            let mut file = File::create(name).unwrap();
-            let bytes = drop_image.as_bytes();
-            file.write_all(bytes).unwrap();
-        }
+        //     let name = "./drop.png";
+        //     let mut file = File::create(name).unwrap();
+        //     let bytes = drop_image.as_bytes();
+        //     file.write_all(bytes).unwrap();
+        // }
     }
 }
