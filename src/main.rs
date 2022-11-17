@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 mod canvas;
-use std::{fs::File, io::Write, thread};
+use std::{fs::File, io::Write};
 
 use canvas::{
     functions::{draw_card, fetch_buffer, Card},
@@ -15,10 +15,8 @@ use std::{
     time::{Duration, Instant},
 };
 
-use bson::Document;
 use chrono::prelude::*;
-use mongo::Mongo;
-use tokio::{join, runtime};
+use tokio::join;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
