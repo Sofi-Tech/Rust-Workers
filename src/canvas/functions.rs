@@ -87,37 +87,44 @@ pub async fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
 
 #[cfg(test)]
 mod tests {
+    use tokio::join;
+
     use super::*;
 
     #[tokio::test]
     async fn generate_and_save_the_drop_image() {
+        let (image_one, image_two, image_three) = join!(
+            fetch_buffer(
+                "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
+            ),
+            fetch_buffer(
+                "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg"
+            ),
+            fetch_buffer(
+                "https://cdn.w1st.xyz/cards/characters/358445c8-0bd8-43ff-943b-4bdfa1264275.jpg"
+            )
+        );
         generate_drop((
             Card {
-                image:
-                    "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
-                        .to_string(),
-                frame_url: "./frames/yellow-drop.png".to_string(),
+                image: image_one,
+                frame_url: "./frames/cyan-drop.png".to_string(),
                 gen: 1,
                 name: "Rose".to_string(),
                 series: "Blackpink".to_string(),
             },
             Card {
-                image:
-                    "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
-                        .to_string(),
-                frame_url: "./frames/yellow-drop.png".to_string(),
+                image: image_two,
+                frame_url: "./frames/purple-drop.png".to_string(),
                 gen: 1,
-                name: "Rose".to_string(),
-                series: "Blackpink".to_string(),
+                name: "Gojo Satoru".to_string(),
+                series: "Jujutsu Kaisen".to_string(),
             },
             Card {
-                image:
-                    "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
-                        .to_string(),
+                image: image_three,
                 frame_url: "./frames/yellow-drop.png".to_string(),
                 gen: 1,
-                name: "Rose".to_string(),
-                series: "Blackpink".to_string(),
+                name: "Demon Slayer".to_string(),
+                series: "Nezuko Kamado".to_string(),
             },
         ))
         .await;

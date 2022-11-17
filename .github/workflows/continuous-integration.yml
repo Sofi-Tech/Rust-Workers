@@ -74,7 +74,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v2
         continue-on-error: true
         with:
-          comment-id: ${{ steps.comment.outputs.comment-id }}
+          comment-id: ${{ steps.edit-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ## :hourglass_flowing_sand: CI is running again... :hourglass_flowing_sand:
@@ -94,6 +94,8 @@ jobs:
           profile: minimal
 
       - name: Rust tests
+        #TODO: Using this makes workflow pass even if tests fail
+        # Remove this with a proper solution
         run: cargo test --tests -- -Zunstable-options --report-time  | tee comment.md
 
       - name: Add comment in the file
