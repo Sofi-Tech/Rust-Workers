@@ -75,7 +75,7 @@ jobs:
         run: cargo test --tests -- -Zunstable-options --report-time  | tee test.txt
 
       - name: Print Test Data
-        run: cp test.txt $GITHUB_OUTPUT
+        run: cat test.txt >> $GITHUB_OUTPUT
 
       - name: Fail if tests fail
         if: always()
@@ -146,10 +146,10 @@ jobs:
       - name: Add Test Report
         if: always()
         run: |
-          echo <details>
-          echo <summery>Test Report</summery>
+          echo "<details>" >> comment.md
+          echo "<summery>Test Report</summery>" >> comment.md
           echo ${{ needs.cargo-test.outputs.test }} >> comment.md
-          echo </details>
+          echo "</details>" >> comment.md
 
       - name: Find PR Comment
         id: comment
