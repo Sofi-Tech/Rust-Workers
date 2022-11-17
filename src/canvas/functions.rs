@@ -70,8 +70,6 @@ pub fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
 
 #[cfg(test)]
 mod tests {
-    use std::{env, io::Write};
-
     use tokio::join;
 
     use super::*;
