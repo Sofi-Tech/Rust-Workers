@@ -60,28 +60,6 @@ jobs:
       ${{ !contains(github.event.head_commit.message, 'chore: ') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Find PR Comment For Edit
-        id: edit-comment
-        if: github.event_name == 'pull_request'
-        uses: peter-evans/find-comment@v2
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: '<!-- CI COMMENT -->'
-
-      - name: Create or update PR comment For Edit
-        if: github.event_name == 'pull_request' && steps.edit-comment.outputs.comment-id != ''
-        uses: peter-evans/create-or-update-comment@v2
-        continue-on-error: true
-        with:
-          comment-id: ${{ steps.edit-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## :hourglass_flowing_sand: CI is running again... :hourglass_flowing_sand:
-            [Wait for it...](https://github.com/vercel/turbo/actions/runs/${{ github.run_id }})
-            <!-- CI COMMENT -->
-          edit-mode: replace
-
       - uses: actions/checkout@v3
         with:
           submodules: true
@@ -94,30 +72,10 @@ jobs:
           profile: minimal
 
       - name: Rust tests
-        run: cargo test --tests -- -Zunstable-options --report-time  | tee comment.md
+        run: cargo test --tests -- -Zunstable-options --report-time  | tee test.txt
 
-      - name: Add comment in the file
-        run: |
-          echo "<!-- CI COMMENT -->" >> comment.md
-
-      - name: Find PR Comment
-        id: comment
-        if: github.event_name == 'pull_request'
-        uses: peter-evans/find-comment@v2
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: '<!-- CI COMMENT -->'
-
-      - name: Create or update PR comment
-        if: github.event_name == 'pull_request'
-        uses: peter-evans/create-or-update-comment@v2
-        continue-on-error: true
-        with:
-          comment-id: ${{ steps.comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body-file: 'comment.md'
-          edit-mode: replace
+      - name: Print Test Data
+        run: cp test.txt $GITHUB_OUTPUT
 
       - name: Fail if tests fail
         if: always()
@@ -126,39 +84,96 @@ jobs:
             exit 1
           fi
 
-    # TODO:Setup this with all the ci and their status
-  # final:
-  #   name: Add Comment
-  #   needs: [cargo-fmt, cargo-clippy, cargo-test]
-  #   permissions:
-  #     contents: read
-  #     pull-requests: write
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Check cancellation
-  #       id: cancelled
-  #       if: needs.cargo-fmt.result == 'cancelled' || needs.cargo-clippy.result == 'cancelled' || needs.cargo-test.result == 'cancelled'
-  #       run: echo "cancelled=true" >> $GITHUB_OUTPUT
+  final:
+    name: Ok
+    needs:
+      - cargo-fmt
+      - cargo-clippy
+      - cargo-test
+    if: always()
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check cancellation
+        id: cancelled
+        if: needs.cargo-fmt.result == 'cancelled' || needs.cargo-clippy.result == 'cancelled' || needs.cargo-test.result == 'cancelled'
+        run: echo "cancelled=true" >> $GITHUB_OUTPUT
 
-  #     - name: Add comment in the file
-  #       run: |
-  #         echo "<!-- CI COMMENT -->" >> comment.md
+      - name: Start summary
+        run: |
+          echo "The following steps have failed in CI" > comment.md
+          echo >> comment.md
+      - name: Cargo Format
+        if: always() && needs.cargo-fmt.result != 'success' && needs.cargo-fmt.result != 'skipped'
+        run: |
+          echo "- Cargo Format" >> failures.md
+          exit 1
+      - name: Cargo Clippy
+        if: always() && needs.cargo-clippy.result != 'success' && needs.cargo-clippy.result != 'skipped'
+        run: |
+          echo "- Cargo Clippy" >> failures.md
+          exit 1
+      - name: Cargo Test
+        if: always() && needs.cargo-test.result != 'success' && needs.cargo-test.result != 'skipped'
+        run: |
+          echo "- Cargo Test" >> failures.md
+          exit 1
 
-  #     - name: Find PR Comment
-  #       id: comment
-  #       if: github.event_name == 'pull_request' && steps.cancelled.outputs.cancelled != 'true'
-  #       uses: peter-evans/find-comment@v2
-  #       with:
-  #         issue-number: ${{ github.event.pull_request.number }}
-  #         comment-author: 'github-actions[bot]'
-  #         body-includes: '<!-- CI COMMENT -->'
+      - name: Add failure prose text
+        if: failure()
+        run: |
+          echo "## :warning: CI failed :warning:" > comment.md
+          echo >> comment.md
+          echo "The following steps have failed in CI:" >> comment.md
+          echo >> comment.md
+          cat failures.md >> comment.md
+          echo >> comment.md
+          echo "See [workflow summary](https://github.com/Sofi-Tech/Rust-Workers/actions/runs/${{ github.run_id }}) for details">> comment.md
+          echo >> comment.md
+          echo "<!-- CI COMMENT -->" >> comment.md
 
-  #     - name: Create or update PR comment
-  #       if: github.event_name == 'pull_request' && steps.cancelled.outputs.cancelled != 'true'
-  #       uses: peter-evans/create-or-update-comment@v2
-  #       continue-on-error: true
-  #       with:
-  #         comment-id: ${{ steps.comment.outputs.comment-id }}
-  #         issue-number: ${{ github.event.pull_request.number }}
-  #         body-file: 'comment.md'
-  #         edit-mode: replace
+      - name: Add success prose text
+        if: success()
+        run: |
+          echo "## :green_circle: CI successful :green_circle:" > comment.md
+          echo >> comment.md
+          echo "Thanks" >> comment.md
+          echo >> comment.md
+          echo "<!-- CI COMMENT -->" >> comment.md
+
+      - name: Add Test Report
+        if: always()
+        run: |
+          echo <details>
+          echo <summery>Test Report</summery>
+          echo ${{ needs.cargo-test.outputs.test }} >> comment.md
+          echo </details>
+
+      - name: Find PR Comment
+        id: comment
+        if: always() && github.event_name == 'pull_request' && steps.cancelled.outputs.cancelled != 'true'
+        uses: peter-evans/find-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- CI COMMENT -->'
+
+      - name: Create or update PR comment
+        if: always() && github.event_name == 'pull_request' && steps.cancelled.outputs.cancelled != 'true'
+        uses: peter-evans/create-or-update-comment@v2
+        continue-on-error: true
+        with:
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-file: 'comment.md'
+          edit-mode: replace
+
+      - name: It's not fine
+        if: failure() && steps.cancelled.outputs.cancelled != 'true'
+        run: exit 1
+
+      - name: It's fine
+        if: success() && steps.cancelled.outputs.cancelled != 'true'
+        run: echo Ok
