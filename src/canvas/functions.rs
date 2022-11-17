@@ -21,7 +21,7 @@ pub async fn fetch_buffer(url: &str) -> Vec<u8> {
     buffer
 }
 
-pub async fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
+pub fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
     let mut frame = File::open(card.frame_url).unwrap();
     let mut frame_bytes = Vec::new();
     let gen_text = format!("G{}", card.gen);
@@ -100,8 +100,7 @@ mod tests {
                 series: "Blackpink".to_string(),
             },
             1,
-        )
-        .await;
+        );
         let canvas = draw_card(
             canvas,
             Card {
@@ -112,8 +111,7 @@ mod tests {
                 series: "Jujutsu Kaisen".to_string(),
             },
             347,
-        )
-        .await;
+        );
         let _canvas = draw_card(
             canvas,
             Card {
@@ -124,7 +122,6 @@ mod tests {
                 series: "Nezuko Kamado".to_string(),
             },
             692,
-        )
-        .await;
+        );
     }
 }
