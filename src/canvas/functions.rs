@@ -21,6 +21,12 @@ pub async fn fetch_buffer(url: &str) -> Vec<u8> {
     buffer
 }
 
+pub async fn fetch_utf(url: &str) -> String {
+    let response = reqwest::get(url);
+    let buffer = response.await.unwrap().text().await.unwrap();
+    buffer
+}
+
 pub fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
     let mut frame = File::open(card.frame_url).unwrap();
     let mut frame_bytes = Vec::new();

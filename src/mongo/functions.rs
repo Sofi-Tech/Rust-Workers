@@ -3,7 +3,7 @@ use std::time::{Duration, Instant};
 use mongodb::{
     bson::{doc, Document},
     options::FindOneOptions,
-    Collection,
+    Collection, Cursor,
 };
 use rand::Rng;
 use tokio::try_join;
@@ -20,7 +20,11 @@ pub async fn get_random_cards(collection: Collection<Document>) -> (Document, Do
     (one, two, three)
 }
 
-async fn get_three_cards(
+pub async fn get_all_character_cards(collection: &Collection<Document>) -> Cursor<Document> {
+    collection.find(None, None).await.unwrap()
+}
+
+pub async fn get_three_cards(
     collection: &Collection<Document>,
     r_numbers: Vec<u64>,
 ) -> (Document, Document, Document) {
