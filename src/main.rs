@@ -2,7 +2,10 @@
 mod canvas;
 use std::{fs::File, io::Write, thread};
 
-use canvas::{functions::generate_drop, Canvas};
+use canvas::{
+    functions::{generate_drop, Card},
+    Canvas,
+};
 
 mod mongo;
 use std::{
@@ -17,10 +20,28 @@ use tokio::runtime;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let drop_image = generate_drop(
-        "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg",
-        "./frames/yellow-drop.png",
-    )
+    // TODO: get tuple of documents from random_cards function and pass it to
+    // generate_drop
+    let drop_image = generate_drop((
+        Card {
+            image_url:
+                "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
+                    .to_string(),
+            frame_url: "./frames/yellow-drop.png".to_string(),
+        },
+        Card {
+            image_url:
+                "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
+                    .to_string(),
+            frame_url: "./frames/yellow-drop.png".to_string(),
+        },
+        Card {
+            image_url:
+                "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
+                    .to_string(),
+            frame_url: "./frames/yellow-drop.png".to_string(),
+        },
+    ))
     .await
     .data();
 

@@ -7,6 +7,11 @@ use skia_safe::{
 
 use super::Canvas;
 
+pub struct Card {
+    pub image_url: String,
+    pub frame_url: String,
+}
+
 pub async fn fetch_buffer(url: &str) -> Vec<u8> {
     let response = reqwest::get(url);
     let buffer = response.await.unwrap().bytes().await.unwrap().to_vec();
@@ -15,13 +20,7 @@ pub async fn fetch_buffer(url: &str) -> Vec<u8> {
 
 // TODO: take card struct as input and get image url, frame url and other info
 // required for draw_card from it
-pub async fn generate_drop(image_url: &str, frame_url: &str) -> Canvas {
-    let buf = fetch_buffer(image_url).await;
-
-    let mut frame = File::open(frame_url).unwrap();
-    let mut frame_bytes = Vec::new();
-    frame.read_to_end(&mut frame_bytes).unwrap();
-
+pub async fn generate_drop(cards: (Card, Card, Card)) -> Canvas {
     let canvas = Canvas::new(1_008, 524);
 
     // Here we are passing canvas to the draw_card fn so it's ownership will be
@@ -30,15 +29,21 @@ pub async fn generate_drop(image_url: &str, frame_url: &str) -> Canvas {
     // or add any lifetime and we can use the canvas in the next line.
     // Not sure if adding lifetime will have any issue or something so before I do
     // research on it, will do it this way.
-    let image_one = draw_card(canvas, &buf, &frame_bytes, 1);
-    let image_two = draw_card(image_one, &buf, &frame_bytes, 347);
-    draw_card(image_two, &buf, &frame_bytes, 692)
+    let image_one = draw_card(canvas, cards.0, 1).await;
+    let image_two = draw_card(image_one, cards.1, 347).await;
+    draw_card(image_two, cards.2, 692).await
 }
 
 // TODO: take card struct as input and get gen, name, series from it
-pub fn draw_card(mut canvas: Canvas, image: &[u8], frame: &[u8], dx: i32) -> Canvas {
-    canvas.draw_image(image, (6 + dx, 4));
-    canvas.draw_image(frame, (dx, 0));
+pub async fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
+    let image = fetch_buffer(&card.image_url).await;
+
+    let mut frame = File::open(card.frame_url).unwrap();
+    let mut frame_bytes = Vec::new();
+    frame.read_to_end(&mut frame_bytes).unwrap();
+
+    canvas.draw_image(&image, (6 + dx, 4));
+    canvas.draw_image(&frame_bytes, (dx, 0));
     canvas.fill_text(
         "G1",
         (16 + dx, 450),
@@ -84,10 +89,26 @@ mod tests {
 
     #[tokio::test]
     async fn generate_and_save_the_drop_image() {
-        generate_drop(
-            "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg",
-            "./frames/yellow-drop.png",
-        )
+        generate_drop((
+            Card {
+                image_url:
+                    "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
+                        .to_string(),
+                frame_url: "./frames/yellow-drop.png".to_string(),
+            },
+            Card {
+                image_url:
+                    "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
+                        .to_string(),
+                frame_url: "./frames/yellow-drop.png".to_string(),
+            },
+            Card {
+                image_url:
+                    "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
+                        .to_string(),
+                frame_url: "./frames/yellow-drop.png".to_string(),
+            },
+        ))
         .await;
     }
 }
