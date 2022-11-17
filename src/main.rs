@@ -1,56 +1,63 @@
 #![allow(dead_code)]
+#![allow(unused_imports)]
+mod caching;
 mod canvas;
-use std::{fs::File, io::Write};
+mod mongo;
 
+use std::{
+    error::Error,
+    fs::File,
+    io::Write,
+    thread,
+    time::{Duration, Instant},
+};
+
+use bson::Document;
+use caching::functions::deserialize_buffer;
 use canvas::{
     functions::{draw_card, fetch_buffer, Card},
     Canvas,
 };
-
-mod mongo;
-mod redis;
-
-use std::{
-    error::Error,
-    time::{Duration, Instant},
-};
-
 use chrono::prelude::*;
-use tokio::join;
+use mongo::Mongo;
+use tokio::{join, runtime};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let redis_connection = redis::Redis::new()?;
+    let redis_connection = caching::Redis::new()?;
     // let mongo = mongo::Mongo::new().await?;
-    let start1 = Instant::now();
-    redis_connection
-        .get("59d1fcbf-0f23-4e81-81f8-ce3eda707584:character_cards:buffer")
-        .unwrap();
-    let duration: Duration = start1.elapsed();
-    println!("GET is: {:?}", duration);
-    // TODO: get tuple of documents from random_cards function and pass it to
-    // generate_drop
+    // redis_connection.drop_all_keys()?;
+    // let cards =
+    //     mongo::functions::get_all_character_cards(&mongo.get_collection("
+    // character_cards")).await; caching::functions::start_db_caching(&
+    // redis_connection, cards, "character_cards").await;
 
-    let (image_one, image_two, image_three) = join!(
-        fetch_buffer(
-            "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
-        ),
-        fetch_buffer(
-            "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg"
-        ),
-        fetch_buffer(
-            "https://cdn.w1st.xyz/cards/characters/358445c8-0bd8-43ff-943b-4bdfa1264275.jpg"
-        )
-    );
+    // let val = redis_connection
+    //     .get("a3d6ded1-c919-46bb-93df-379a9f12174d:character_cards:buffer")
+    //     .unwrap();
+    // caching::functions::deserialize_buffer(val);
+
+    let start = std::time::Instant::now();
+    let images = redis_connection
+        .mget(vec![
+            "39e431f3-442c-4bbd-8b7e-e3ea92166c03:character_cards:buffer".to_string(),
+            "59d1fcbf-0f23-4e81-81f8-ce3eda707584:character_cards:buffer".to_string(),
+            "cb78dcb9-108f-4daa-be2a-82c722607981:character_cards:buffer".to_string(),
+        ])
+        .unwrap();
+
+    //  println!("{:?}", images);
+    let image_one = deserialize_buffer(images[0].clone()).buffer;
+    let image_two = deserialize_buffer(images[1].clone()).buffer;
+    let image_three = deserialize_buffer(images[2].clone()).buffer;
 
     let canvas = Canvas::new(1_008, 524);
-
     // Here we are passing canvas to the draw_card fn so it's ownership will be
     // lost. We can't use it in the next line. So instead we return it from the
-    // function and pass it again in 2nd function. This way we don't need to clone
-    // or add any lifetime and we can use the canvas in the next line.
-    // Not sure if adding lifetime will have any issue or something so before I do
-    // research on it, will do it this way.
+    // function and pass it again in 2nd function. This way we don't need to
+    // clone or add any lifetime and we can use the canvas in the next line.
+    // Not sure if adding lifetime will have any issue or something so before I
+    // do research on it, will do it this way.
     let canvas = draw_card(
         canvas,
         Card {
@@ -91,12 +98,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut file = File::create(name).unwrap();
     let bytes = drop_image.as_bytes();
     file.write_all(bytes).unwrap();
-
-    // println!("{:?}", a.as_bytes());
-    // let cards =
-    //     mongo::functions::get_all_character_cards(&mongo.get_collection("
-    // character_cards")).await; redis::functions::start_db_caching(&
-    // redis_connection, cards, "character_cards").await;
-
+    println!("Time taken: {:?}", start.elapsed());
     Ok(())
 }

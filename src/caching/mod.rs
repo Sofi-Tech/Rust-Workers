@@ -16,7 +16,7 @@ impl Redis {
         Ok(value)
     }
 
-    pub fn set(&self, key: &str, value: Vec<u8>) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn set(&self, key: &str, value: String) -> Result<(), Box<dyn std::error::Error>> {
         let mut con = self.client.get_connection()?;
         redis::cmd("SET")
             .arg(key)
@@ -49,9 +49,22 @@ impl Redis {
         Ok(value)
     }
 
+    pub fn drop_all_keys(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let mut con = self.client.get_connection()?;
+        redis::cmd("FLUSHALL").query::<String>(&mut con)?;
+        redis::cmd("FLUSHDB").query::<String>(&mut con)?;
+        Ok(())
+    }
+
     pub fn decrement_value(&self, key: &str) -> Result<i32, Box<dyn std::error::Error>> {
         let mut con = self.client.get_connection()?;
         let value: i32 = redis::cmd("DECR").arg(key).query(&mut con)?;
+        Ok(value)
+    }
+
+    pub fn mget(&self, keys: Vec<String>) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+        let mut con = self.client.get_connection()?;
+        let value: Vec<String> = redis::cmd("MGET").arg(keys).query(&mut con)?;
         Ok(value)
     }
 }

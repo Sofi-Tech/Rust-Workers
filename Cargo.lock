@@ -1672,6 +1672,7 @@ dependencies = [
  "redis",
  "reqwest",
  "serde",
+ "serde_json",
  "skia-safe",
  "tokio",
  "zmq",
