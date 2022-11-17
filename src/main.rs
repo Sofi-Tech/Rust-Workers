@@ -53,8 +53,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             series: "Blackpink".to_string(),
         },
         1,
-    )
-    .await;
+    );
     let canvas = draw_card(
         canvas,
         Card {
@@ -65,8 +64,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             series: "Jujutsu Kaisen".to_string(),
         },
         347,
-    )
-    .await;
+    );
     let mut canvas = draw_card(
         canvas,
         Card {
@@ -77,8 +75,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             series: "Nezuko Kamado".to_string(),
         },
         692,
-    )
-    .await;
+    );
 
     let drop_image = canvas.data();
 
