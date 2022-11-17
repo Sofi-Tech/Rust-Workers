@@ -182,7 +182,7 @@ jobs:
         run: |
           echo "<details>" >> comment.md
           echo "<summery>Test Report</summery>\n" >> comment.md
-          cat test/test.txt >> comment.md
+          cat report/test.txt >> comment.md
           echo "</details>" >> comment.md
 
       - name: Find PR Comment
