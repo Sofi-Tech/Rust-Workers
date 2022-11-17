@@ -103,7 +103,9 @@ jobs:
           path: test.txt
           if-no-files-found: error
 
-      - name: Fail if tests fail
+      # Above test down't exits if test fails because we are writing it in a file.
+      # So checking the file again to see if it was failed
+      - name: Fail if test fails
         if: always()
         run: |
           if grep -q "test result: FAILED" test.txt || grep -q "due to previous error" test.txt; then
@@ -180,7 +182,7 @@ jobs:
         run: |
           echo "<details>" >> comment.md
           echo "<summery>Test Report</summery>\n" >> comment.md
-          cat text.txt >> comment.md
+          cat test.txt >> comment.md
           echo "</details>" >> comment.md
 
       - name: Find PR Comment
