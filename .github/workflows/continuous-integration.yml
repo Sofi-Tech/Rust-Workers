@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Find PR Comment For Edit
-        id: comment
+        id: edit-comment
         if: github.event_name == 'pull_request'
         uses: peter-evans/find-comment@v2
         with:
@@ -70,7 +70,7 @@ jobs:
           body-includes: '<!-- CI COMMENT -->'
 
       - name: Create or update PR comment For Edit
-        if: github.event_name == 'pull_request' && steps.comment.outputs.comment-id != ''
+        if: github.event_name == 'pull_request' && steps.edit-comment.outputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@v2
         continue-on-error: true
         with:
