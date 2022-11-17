@@ -36,7 +36,6 @@ pub async fn start_db_caching(redis: &Redis, mut cards: Cursor<Document>, wild_k
             .unwrap();
         let key_name = format!("{}:{}:buffer", uid, wild_key);
         let buffer = fetch_buffer(url).await;
-        println!("Caching: {}", key_name);
         redis
             .set(
                 &key_name,

@@ -10,6 +10,10 @@ impl Redis {
         Ok(Self { client })
     }
 
+    pub fn connected(&self) -> bool {
+        self.client.get_connection().is_ok()
+    }
+
     pub fn get(&self, key: &str) -> Result<String, Box<dyn std::error::Error>> {
         let mut con = self.client.get_connection()?;
         let value: String = redis::cmd("GET").arg(key).query(&mut con)?;
@@ -66,5 +70,16 @@ impl Redis {
         let mut con = self.client.get_connection()?;
         let value: Vec<String> = redis::cmd("MGET").arg(keys).query(&mut con)?;
         Ok(value)
+    }
+
+    pub fn get_connection(&self) -> Result<redis::Connection, Box<dyn std::error::Error>> {
+        let con = self.client.get_connection()?;
+        Ok(con)
+    }
+
+    pub fn copy(&self) -> Self {
+        Self {
+            client: self.client.clone(),
+        }
     }
 }
