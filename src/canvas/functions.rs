@@ -21,23 +21,6 @@ pub async fn fetch_buffer(url: &str) -> Vec<u8> {
     buffer
 }
 
-// TODO: take card struct as input and get image url, frame url and other info
-// required for draw_card from it
-pub async fn generate_drop(cards: (Card, Card, Card)) -> Canvas {
-    let canvas = Canvas::new(1_008, 524);
-
-    // Here we are passing canvas to the draw_card fn so it's ownership will be
-    // lost. We can't use it in the next line. So instead we return it from the
-    // function and pass it again in 2nd function. This way we don't need to clone
-    // or add any lifetime and we can use the canvas in the next line.
-    // Not sure if adding lifetime will have any issue or something so before I do
-    // research on it, will do it this way.
-    let image_one = draw_card(canvas, cards.0, 1).await;
-    let image_two = draw_card(image_one, cards.1, 347).await;
-    draw_card(image_two, cards.2, 692).await
-}
-
-// TODO: take card struct as input and get gen, name, series from it
 pub async fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
     let mut frame = File::open(card.frame_url).unwrap();
     let mut frame_bytes = Vec::new();
@@ -104,7 +87,11 @@ mod tests {
                 "https://cdn.w1st.xyz/cards/characters/358445c8-0bd8-43ff-943b-4bdfa1264275.jpg"
             )
         );
-        generate_drop((
+
+        let canvas = Canvas::new(1_008, 524);
+
+        let canvas = draw_card(
+            canvas,
             Card {
                 image: image_one,
                 frame_url: "./frames/cyan-drop.png".to_string(),
@@ -112,6 +99,11 @@ mod tests {
                 name: "Rose".to_string(),
                 series: "Blackpink".to_string(),
             },
+            1,
+        )
+        .await;
+        let canvas = draw_card(
+            canvas,
             Card {
                 image: image_two,
                 frame_url: "./frames/purple-drop.png".to_string(),
@@ -119,6 +111,11 @@ mod tests {
                 name: "Gojo Satoru".to_string(),
                 series: "Jujutsu Kaisen".to_string(),
             },
+            347,
+        )
+        .await;
+        let _canvas = draw_card(
+            canvas,
             Card {
                 image: image_three,
                 frame_url: "./frames/yellow-drop.png".to_string(),
@@ -126,7 +123,8 @@ mod tests {
                 name: "Demon Slayer".to_string(),
                 series: "Nezuko Kamado".to_string(),
             },
-        ))
+            692,
+        )
         .await;
     }
 }

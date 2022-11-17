@@ -3,7 +3,7 @@ mod canvas;
 use std::{fs::File, io::Write, thread};
 
 use canvas::{
-    functions::{fetch_buffer, generate_drop, Card},
+    functions::{draw_card, fetch_buffer, Card},
     Canvas,
 };
 
@@ -34,7 +34,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
             "https://cdn.w1st.xyz/cards/characters/358445c8-0bd8-43ff-943b-4bdfa1264275.jpg"
         )
     );
-    let drop_image = generate_drop((
+
+    let canvas = Canvas::new(1_008, 524);
+
+    // Here we are passing canvas to the draw_card fn so it's ownership will be
+    // lost. We can't use it in the next line. So instead we return it from the
+    // function and pass it again in 2nd function. This way we don't need to clone
+    // or add any lifetime and we can use the canvas in the next line.
+    // Not sure if adding lifetime will have any issue or something so before I do
+    // research on it, will do it this way.
+    let canvas = draw_card(
+        canvas,
         Card {
             image: image_one,
             frame_url: "./frames/cyan-drop.png".to_string(),
@@ -42,6 +52,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
             name: "Rose".to_string(),
             series: "Blackpink".to_string(),
         },
+        1,
+    )
+    .await;
+    let canvas = draw_card(
+        canvas,
         Card {
             image: image_two,
             frame_url: "./frames/purple-drop.png".to_string(),
@@ -49,6 +64,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
             name: "Gojo Satoru".to_string(),
             series: "Jujutsu Kaisen".to_string(),
         },
+        347,
+    )
+    .await;
+    let mut canvas = draw_card(
+        canvas,
         Card {
             image: image_three,
             frame_url: "./frames/yellow-drop.png".to_string(),
@@ -56,9 +76,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
             name: "Demon Slayer".to_string(),
             series: "Nezuko Kamado".to_string(),
         },
-    ))
-    .await
-    .data();
+        692,
+    )
+    .await;
+
+    let drop_image = canvas.data();
 
     let name = format!("./out/{}.png", Utc::now().timestamp_millis());
     let mut file = File::create(name).unwrap();
