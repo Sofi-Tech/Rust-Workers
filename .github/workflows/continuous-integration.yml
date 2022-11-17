@@ -174,13 +174,14 @@ jobs:
           echo "<!-- CI COMMENT -->" >> comment.md
 
       - name: Download test.txt file from artifacts
+        if: always() && github.event_name == 'pull_request' && steps.cancelled.outputs.cancelled != 'true'
         uses: actions/download-artifact@v3
         with:
           name: test-report
           path: report/
 
       - name: Add Test Report
-        if: always()
+        if: always() && github.event_name == 'pull_request' && steps.cancelled.outputs.cancelled != 'true'
         run: |
           echo "<details>" >> comment.md
           echo "<summary>Test Report</summary>" >> comment.md
