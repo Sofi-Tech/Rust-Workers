@@ -52,7 +52,7 @@ pub fn draw_card(mut canvas: Canvas, image: &[u8], frame: &[u8], dx: i32) -> Can
         ),
     );
     canvas.fill_text(
-        "Gojo Satoru",
+        "Rose",
         (14 + dx, 480),
         &Font::from_typeface(
             Typeface::new(
@@ -64,7 +64,7 @@ pub fn draw_card(mut canvas: Canvas, image: &[u8], frame: &[u8], dx: i32) -> Can
         ),
     );
     canvas.fill_text(
-        "Jujutsu Kaisen",
+        "Blackpink",
         (14 + dx, 507),
         &Font::from_typeface(
             Typeface::new(
@@ -84,12 +84,10 @@ mod tests {
 
     #[tokio::test]
     async fn generate_and_save_the_drop_image() {
-        let _canvas = generate_drop(
-            "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg",
-            "./frames/cyan-drop.png",
+        generate_drop(
+            "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg",
+            "./frames/yellow-drop.png",
         )
         .await;
-
-        //TODO: compare the bytes with an existing image
     }
 }

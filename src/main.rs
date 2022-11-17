@@ -18,8 +18,8 @@ use tokio::runtime;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let drop_image = generate_drop(
-        "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg",
-        "./frames/blue-drop.png",
+        "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg",
+        "./frames/yellow-drop.png",
     )
     .await
     .data();
