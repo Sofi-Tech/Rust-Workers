@@ -99,14 +99,14 @@ jobs:
       - name: Upload test.txt file to artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: text-report
+          name: test-report
           path: test.txt
           if-no-files-found: error
 
       - name: Fail if tests fail
         if: always()
         run: |
-          if grep -q "test result: FAILED" comment.md || grep -q "due to previous error" comment.md; then
+          if grep -q "test result: FAILED" test.txt || grep -q "due to previous error" test.txt; then
             exit 1
           fi
 
@@ -179,7 +179,7 @@ jobs:
         if: always()
         run: |
           echo "<details>" >> comment.md
-          echo "<summery>Test Report</summery>" >> comment.md
+          echo "<summery>Test Report</summery>\n" >> comment.md
           cat text.txt >> comment.md
           echo "</details>" >> comment.md
 
