@@ -175,14 +175,14 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: test-report
-          path: test.txt
+          path: report/
 
       - name: Add Test Report
         if: always()
         run: |
           echo "<details>" >> comment.md
           echo "<summery>Test Report</summery>\n" >> comment.md
-          cat test.txt >> comment.md
+          cat test/test.txt >> comment.md
           echo "</details>" >> comment.md
 
       - name: Find PR Comment
