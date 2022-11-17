@@ -100,7 +100,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-report
-          path: test.txt
+          path: |
+            test.txt
+            drop.png
           if-no-files-found: error
 
       # Above test down't exits if test fails because we are writing it in a file.
@@ -183,6 +185,13 @@ jobs:
           echo "<details>" >> comment.md
           echo "<summary>Test Report</summary>" >> comment.md
           cat report/test.txt >> comment.md
+          echo "</details>" >> comment.md
+          echo >> comment.md
+          echo "<details>" >> comment.md
+          echo "<summary>Drop.png</summary>" >> comment.md
+          echo "<img src=\"data:image/png;base64," >> comment.md
+          base64 report/drop.png >> comment.md
+          echo "\"/>" >> comment.md
           echo "</details>" >> comment.md
 
       - name: Find PR Comment

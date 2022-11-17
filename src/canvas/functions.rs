@@ -70,6 +70,8 @@ pub fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
 
 #[cfg(test)]
 mod tests {
+    use std::{env, io::Write};
+
     use tokio::join;
 
     use super::*;
@@ -112,7 +114,7 @@ mod tests {
             },
             347,
         );
-        let _canvas = draw_card(
+        let mut canvas = draw_card(
             canvas,
             Card {
                 image: image_three,
@@ -123,5 +125,14 @@ mod tests {
             },
             692,
         );
+
+        if env::var("CI").is_ok() {
+            let drop_image = canvas.data();
+
+            let name = "./drop.png";
+            let mut file = File::create(name).unwrap();
+            let bytes = drop_image.as_bytes();
+            file.write_all(bytes).unwrap();
+        }
     }
 }
