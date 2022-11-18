@@ -6,11 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-mongodb = "2.1"
+mongodb = { version = "2.0.2", default-features = false, features = [
+    "async-std-runtime",
+] }
 bson = { version = "2", features = [
     "chrono-0_4",
 ] } # Needed for using chrono datetime in doc
-tokio = { version = "1.21.2" }
+tokio = { version = "1.21.2", features = ["full"] }
 chrono = "0.4" # Used for setting DateTimes
 serde = "1" # Used in the Map Data into Structs section
 dotenv = "0.15.0"
@@ -18,7 +20,15 @@ zmq = "0.10.0"
 dotenv_codegen = "0.15.0"
 rand = "0.8.5"
 skia-safe = "0"
-reqwest = { version = "0.11.12" }
+reqwest = { version = "0.11.13", features = [
+    "blocking",
+    "json",
+    "default-tls",
+] }
 image = "0.24.5"
 redis = "0.22.1"
 serde_json = "1.0"
+futures = { version = "0.3", default-features = false, features = [
+    "thread-pool",
+    "futures-executor",
+] }

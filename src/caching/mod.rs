@@ -6,7 +6,7 @@ pub struct Redis {
 
 impl Redis {
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        let client = redis::Client::open("redis://127.0.0.1:6379/")?;
+        let client = redis::Client::open("redis://127.0.0.1/")?;
         Ok(Self { client })
     }
 
@@ -20,7 +20,7 @@ impl Redis {
         Ok(value)
     }
 
-    pub fn set(&self, key: &str, value: String) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn set(&self, key: String, value: String) -> Result<(), Box<dyn std::error::Error>> {
         let mut con = self.client.get_connection()?;
         redis::cmd("SET")
             .arg(key)

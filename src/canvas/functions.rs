@@ -4,8 +4,9 @@ use skia_safe::{
     font_style::{Slant, Weight, Width},
     Font, FontStyle, Typeface,
 };
+use tokio;
 
-use super::Canvas;
+use super::Canvas; // 0.2.21, features = ["macros"]
 
 pub struct Card {
     pub image: Vec<u8>,
@@ -13,18 +14,6 @@ pub struct Card {
     pub gen: i32,
     pub name: String,
     pub series: String,
-}
-
-pub async fn fetch_buffer(url: &str) -> Vec<u8> {
-    let response = reqwest::get(url);
-    let buffer = response.await.unwrap().bytes().await.unwrap().to_vec();
-    buffer
-}
-
-pub async fn fetch_utf(url: &str) -> String {
-    let response = reqwest::get(url);
-    let buffer = response.await.unwrap().text().await.unwrap();
-    buffer
 }
 
 pub fn draw_card(mut canvas: Canvas, card: Card, dx: i32) -> Canvas {
@@ -79,17 +68,19 @@ mod tests {
     use tokio::join;
 
     use super::*;
+    use crate::canvas::request::Request;
 
     #[tokio::test]
     async fn generate_and_save_the_drop_image() {
+        let req = Request::new();
         let (image_one, image_two, image_three) = join!(
-            fetch_buffer(
+            req.fetch_buffer(
                 "https://cdn.w1st.xyz/cards/characters/42739898-0dc5-43ec-b918-889fd1a993b0.jpg"
             ),
-            fetch_buffer(
+            req.fetch_buffer(
                 "https://cdn.w1st.xyz/cards/characters/1e364732-dfee-4672-bc0e-75796d3f9f78.jpg"
             ),
-            fetch_buffer(
+            req.fetch_buffer(
                 "https://cdn.w1st.xyz/cards/characters/358445c8-0bd8-43ff-943b-4bdfa1264275.jpg"
             )
         );

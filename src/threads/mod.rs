@@ -1,8 +1,9 @@
+pub mod asyncpool;
+
 use std::{
     sync::{mpsc, Arc, Mutex},
     thread,
 };
-pub mod async_pool;
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
 pub struct ThreadPool {
