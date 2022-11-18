@@ -1,5 +1,6 @@
 use std::mem;
 pub mod functions;
+pub mod request;
 use skia_safe::{
     Color, Data, EncodedImageFormat, Font, Image, ImageGenerator, Paint, PaintStyle, Path, Point,
     Surface,

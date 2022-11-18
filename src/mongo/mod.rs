@@ -2,15 +2,16 @@ pub mod functions;
 
 use std::error::Error;
 
+use bson::Document;
 // use dotenv_codegen::dotenv;
 // use bson::Document;
 use mongodb::{
     options::{ClientOptions, ResolverConfig},
-    Client,
+    Client, Collection, Database,
 };
 
 pub struct Mongo {
-    //    / db: Database,
+    db: Database,
     client: Client,
 }
 
@@ -25,20 +26,20 @@ impl Mongo {
                 .await?;
 
         let client = Client::with_options(options)?;
-        // let db = client.database("Sofi");
+        let db = client.database("Sofi");
 
-        Ok(Self { client })
+        Ok(Self { db, client })
     }
 
-    // pub fn get_collection(&self, collection: &str) -> Collection<Document> {
-    //     self.db.collection(collection)
-    // }
+    pub fn get_collection(&self, collection: &str) -> Collection<Document> {
+        self.db.collection(collection)
+    }
 
     pub fn get_client(&self) -> &Client {
         &self.client
     }
 
-    // pub fn get_db(&self) -> &Database {
-    //     &self.db
-    // }
+    pub fn get_db(&self) -> &Database {
+        &self.db
+    }
 }
