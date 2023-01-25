@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+lapin = { version = "2.1.1" }
 mongodb = { version = "2.0.2", default-features = false, features = [
     "async-std-runtime",
 ] }
@@ -16,7 +17,6 @@ tokio = { version = "1.21.2", features = ["full"] }
 chrono = "0.4" # Used for setting DateTimes
 serde = "1" # Used in the Map Data into Structs section
 dotenv = "0.15.0"
-zmq = "0.10.0"
 dotenv_codegen = "0.15.0"
 rand = "0.8.5"
 skia-safe = "0"

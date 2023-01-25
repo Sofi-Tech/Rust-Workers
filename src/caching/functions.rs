@@ -71,8 +71,8 @@ pub fn serialize_buffer(value: BufferInstance) -> String {
     serde_json::to_string(&value).unwrap()
 }
 
-pub fn deserialize_buffer(value: String) -> BufferInstance {
-    serde_json::from_str(&value).unwrap()
+pub fn deserialize_buffer(value: &str) -> BufferInstance {
+    serde_json::from_str(value).unwrap()
 }
 
 async fn concurrent(card_vec: Vec<CardStruct>) {
@@ -111,6 +111,11 @@ async fn with_runtime(rt: &runtime::Runtime, card_vec: Vec<CardStruct>) {
     for (i, card) in card_vec.iter().enumerate() {
         let redis_clone = redis_connection.copy();
         let key_name = card.key_name.clone();
+        // continue if key_name exists in redis
+        if redis_clone.exists(&key_name).unwrap() {
+            println!("continue");
+            continue;
+        }
         let url = card.url.clone();
         let handle = rt.spawn(async move {
             let time = Instant::now();

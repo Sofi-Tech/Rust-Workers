@@ -1,9 +1,16 @@
 {
   "editor.formatOnSave": true,
-  "rust-analyzer.checkOnSave.command": "clippy",
-  "rust-analyzer.checkOnSave.enable": true,
+  "rust-analyzer.check.command": "clippy",
+  "rust-analyzer.checkOnSave": true,
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    }
   },
   "cSpell.words": ["asyncpool", "bson", "DECR", "reqwest", "SOFI"]
 }

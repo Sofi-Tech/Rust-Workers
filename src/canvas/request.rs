@@ -1,4 +1,7 @@
+// macro for copy
+
 use reqwest::Client; // 0.10.6
+
 pub struct Request {
     pub client: Client,
 }
@@ -14,12 +17,6 @@ impl Request {
         let res = self.client.get(url).send().await.unwrap();
         let buffer = res.bytes().await.unwrap().to_vec();
         buffer
-    }
-
-    pub fn copy(&self) -> Self {
-        Self {
-            client: self.client.clone(),
-        }
     }
 }
 
