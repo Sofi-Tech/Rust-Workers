@@ -28,22 +28,52 @@ use mongo::{
     Mongo,
 };
 use mongodb::Collection;
+use serde::{Deserialize, Serialize};
 use threads::asyncpool::create_new_pool;
-use tokio::{join, runtime, time::sleep};
+use tokio::{
+    io::{AsyncReadExt, AsyncWriteExt},
+    join,
+    net::{TcpListener, TcpStream},
+    runtime,
+    time::sleep,
+};
+
+#[derive(Serialize, Deserialize, Debug)]
+struct IncomingMessage {
+    data: Payload,
+    id: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Payload {
+    payload: String,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    let listener = TcpListener::bind("127.0.0.1:3000").await?;
+
+    tokio::spawn(async move {
+        while let Ok((stream, _)) = listener.accept().await {
+            tokio::spawn(async move {
+                if let Err(e) = handle_connection(stream).await {
+                    eprintln!("Error handling connection: {}", e);
+                }
+            });
+        }
+    });
+
     // TODO: get tuple of documents from random_cards function and pass it to
     // generate_drop
-    let mongo = mongo::Mongo::new().await.unwrap();
-    let client = mongo.get_client();
-    let collection = client.database("Sofi").collection("character_cards");
-    // redis caching below
-    // **********************************************************************
+    // let mongo = mongo::Mongo::new().await.unwrap();
+    // let client = mongo.get_client();
+    // let collection = client.database("Sofi").collection("character_cards");
+    // // redis caching below
+    // // **********************************************************************
     // let redis = Redis::new().unwrap();
     // redis.drop_all_keys().unwrap();
-    let cursor = get_all_character_cards(&collection).await;
-    start_db_caching(cursor, "character_cards").await;
+    // let cursor = get_all_character_cards(&collection).await;
+    // start_db_caching(cursor, "character_cards").await;
     // **********************************************************************
 
     // let async_th_pool = create_new_pool(12, "Drop-Generator-Thread-".to_string());
@@ -122,5 +152,34 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // });
 
     sleep(Duration::from_millis(1000 * 60 * 5)).await;
+    Ok(())
+}
+
+async fn handle_connection(mut stream: TcpStream) -> Result<(), Box<dyn Error>> {
+    let mut buffer = vec![0; 1024];
+
+    loop {
+        let num_bytes = stream.read(&mut buffer).await?;
+        if num_bytes == 0 {
+            break;
+        }
+
+        // Deserialize the received data into a Message struct
+        let message: IncomingMessage = serde_json::from_slice(&buffer[..num_bytes])?;
+
+        // Process the message or perform any required operations
+        println!("Received message: {:?}", message);
+
+        let response = IncomingMessage {
+            data: Payload {
+                payload: "Response from rust".to_owned(),
+            },
+            id: message.id,
+        };
+        let response_data = serde_json::to_vec(&response)?;
+        stream.write_all(&response_data).await?;
+        stream.flush().await?;
+    }
+
     Ok(())
 }
