@@ -1,7 +1,7 @@
 {
+  "type": "module",
   "dependencies": {
-    "msgpackr": "^1.9.2",
-    "tslib": "^2.5.3",
-    "veza": "^1.2.0"
+    "@sofidev/ipc": "^1.2.2",
+    "msgpackr": "^1.9.2"
   }
 }

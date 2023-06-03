@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import { readdirSync, lstatSync } from 'fs';
+import { join } from 'path';
 
 const getMostRecentFile = (files) => {
   return files.length ? files[0].mtime : undefined;
@@ -10,14 +10,13 @@ const getMostOldestFile = (files) => {
 };
 
 const orderReccentFiles = (dir) => {
-  return fs
-    .readdirSync(dir)
-    .filter((file) => fs.lstatSync(path.join(dir, file)).isFile())
-    .map((file) => ({ file, mtime: fs.lstatSync(path.join(dir, file)).mtime }))
+  return readdirSync(dir)
+    .filter((file) => lstatSync(join(dir, file)).isFile())
+    .map((file) => ({ file, mtime: lstatSync(join(dir, file)).mtime }))
     .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
 };
 let fss = orderReccentFiles('/home/Rust-Workers/out');
 
 console.log(
-  (getMostRecentFile(fss) - getMostOldestFile(fss)) / 1000 + ' seconds',
+  (getMostRecentFile(fss) - getMostOldestFile(fss)) / 1000 + ' seconds'
 );
