@@ -36,17 +36,7 @@ use tokio::{join, runtime, time::sleep};
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let server = Server::new("Sofi".to_string());
-
-    let handle_message: fn(IncomingMessage) -> Option<Payload> =
-        |incoming_message: IncomingMessage| {
-            println!("{}: {:?}", incoming_message.id, incoming_message.data);
-
-            Some(Payload {
-                payload: format!("Hello {}, welcome to rust server", incoming_message.id),
-            })
-        };
-
-    server.bind("127.0.0.1:3000", handle_message).await?;
+    server.bind("127.0.0.1:3000").await?;
 
     // sleep(Duration::from_millis(1000 * 5)).await;
 

@@ -1,5 +1,6 @@
 import { setTimeout as sleep } from 'timers/promises';
 import { Client } from '@sofidev/ipc';
+import { Timer } from './Timer.js';
 
 const name = process.argv[2];
 
@@ -28,15 +29,15 @@ await client.connectTo(3000, '127.0.0.1');
 console.log(`${name}: Connected to Rust server`);
 
 await sleep(5000);
-
+const timer = new Timer();
 for (const _ of Array(20).keys()) {
   // Send a message to the Rust server
-  const message = { payload: `Hello from ${name}` };
-  console.log(`Sending message from ${name}:`, message);
+  const message = { payload: `ping` };
+  const time = timer.time();
+  await client.sendTo('Sofi', message, { receptive: true }).then((res) => {
+    console.log(`Received response from Rust server:`, res.payload);
+  });
+  timer.timeEnd(time, true, (t) => `Time taken: ${t}`);
 
-  const res = await client.sendTo('Sofi', message);
-
-  console.log(`Received response at ${name}:`, res);
-
-  await sleep(1000);
+  // await sleep(1000);
 }

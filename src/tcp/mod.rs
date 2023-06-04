@@ -2,18 +2,22 @@ use std::{
     collections::{hash_map::Entry, HashMap},
     error::Error,
     sync::Arc,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 use serde::{Deserialize, Serialize};
 pub mod functions;
-
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},
     sync::{mpsc, Mutex, MutexGuard},
+    time::sleep,
 };
 
-use crate::tcp::functions::{create, create_from_id, read};
+use crate::{
+    canvas,
+    tcp::functions::{create, create_from_id, read},
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Payload {
@@ -36,7 +40,6 @@ pub struct Server {
 pub async fn handle_connection(
     server_mutex: Arc<Mutex<Server>>,
     client_mutex: Arc<Mutex<TcpStream>>,
-    handle_message: fn(IncomingMessage) -> Option<Payload>,
 ) -> Result<(), Box<dyn Error>> {
     let mut server = server_mutex.lock().await;
     let mut client = client_mutex.lock().await;
@@ -50,6 +53,10 @@ pub async fn handle_connection(
     let mut name = "".to_string();
 
     loop {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Failed to get timestamp")
+            .as_secs();
         let num_bytes = client.read(&mut buffer).await?;
         if num_bytes == 0 {
             break;
@@ -76,6 +83,7 @@ pub async fn handle_connection(
 
             match queue_item {
                 Some(resolve) => {
+                    println!("Resolving queue item: {:?}", message);
                     resolve.send(message).await?;
                 }
                 None => {
@@ -84,8 +92,16 @@ pub async fn handle_connection(
                         receptive: header.receptive,
                         data: message,
                     };
+                    let msg = message.data.payload.clone();
+                    let mut data = Some(Payload {
+                        payload: "Nothing".to_string(),
+                    });
 
-                    let data = handle_message(message);
+                    if msg == "ping" {
+                        data = Some(Payload {
+                            payload: format!("pong {}", timestamp),
+                        });
+                    }
 
                     if let Some(data) = data {
                         if !header.receptive {
@@ -114,11 +130,7 @@ impl Server {
         }
     }
 
-    pub async fn bind(
-        self,
-        addr: &str,
-        handle_message: fn(IncomingMessage) -> Option<Payload>,
-    ) -> Result<(), Box<dyn Error>> {
+    pub async fn bind(self, addr: &str) -> Result<(), Box<dyn Error>> {
         let listener = TcpListener::bind(addr).await?;
 
         tokio::spawn(async move {
@@ -127,10 +139,7 @@ impl Server {
                 let server = Arc::new(Mutex::new(self.clone()));
 
                 tokio::spawn(async move {
-                    if let Err(e) =
-                        handle_connection(server, Arc::new(Mutex::new(client)), handle_message)
-                            .await
-                    {
+                    if let Err(e) = handle_connection(server, Arc::new(Mutex::new(client))).await {
                         eprintln!("Error handling connection: {}", e);
                     }
                 });
