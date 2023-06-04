@@ -24,26 +24,6 @@ pub struct IncomingMessage {
     pub id: u64,
     pub receptive: bool,
     pub data: Payload,
-    pub client: Arc<Mutex<TcpStream>>,
-}
-
-impl IncomingMessage {
-    pub async fn reply<T>(&mut self, data: T) -> Result<(), Box<dyn Error>>
-    where
-        T: Serialize,
-    {
-        if !self.receptive {
-            return Err("Cannot reply to a non-receptive message".into());
-        }
-        let mut client = self.client.lock().await;
-
-        let response_data = rmp_serde::to_vec_named(&data)?;
-        let data = create_from_id(self.id, false, &response_data);
-        client.write_all(&data).await?;
-        client.flush().await?;
-
-        Ok(())
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -56,7 +36,7 @@ pub struct Server {
 pub async fn handle_connection(
     server_mutex: Arc<Mutex<Server>>,
     client_mutex: Arc<Mutex<TcpStream>>,
-    handle_message: fn(IncomingMessage),
+    handle_message: fn(IncomingMessage) -> Option<Payload>,
 ) -> Result<(), Box<dyn Error>> {
     let mut server = server_mutex.lock().await;
     let mut client = client_mutex.lock().await;
@@ -92,17 +72,6 @@ pub async fn handle_connection(
 
             println!("Message: {:?}", message);
 
-            let reply = Payload {
-                payload: format!("Hello, {}", name),
-            };
-
-            let response_data = rmp_serde::to_vec_named(&reply)?;
-
-            let data = create_from_id(header.id, false, &response_data);
-
-            client.write_all(&data).await?;
-            client.flush().await?;
-
             let queue_item = server.queue.get_mut(&header.id);
 
             match queue_item {
@@ -114,10 +83,20 @@ pub async fn handle_connection(
                         id: header.id,
                         receptive: header.receptive,
                         data: message,
-                        client: client_mutex.clone(),
                     };
 
-                    handle_message(message);
+                    let data = handle_message(message);
+
+                    if let Some(data) = data {
+                        if !header.receptive {
+                            return Err("Cannot reply to a non-receptive message".into());
+                        }
+
+                        let response_data = rmp_serde::to_vec_named(&data)?;
+                        let data = create_from_id(header.id, false, &response_data);
+                        client.write_all(&data).await?;
+                        client.flush().await?;
+                    }
                 }
             }
         }
@@ -138,7 +117,7 @@ impl Server {
     pub async fn bind(
         self,
         addr: &str,
-        handle_message: fn(IncomingMessage),
+        handle_message: fn(IncomingMessage) -> Option<Payload>,
     ) -> Result<(), Box<dyn Error>> {
         let listener = TcpListener::bind(addr).await?;
 
@@ -191,7 +170,6 @@ impl Server {
         let id = read(&data).id;
 
         // TODO: add timeout
-
         let (tx, mut rx) = mpsc::channel(1);
 
         self.queue.insert(id, tx);

@@ -1,6 +1,9 @@
-use std::time::SystemTime;
+use std::{
+    sync::atomic::{AtomicU16, Ordering},
+    time::SystemTime,
+};
 
-static mut I: u16 = 0;
+static I: AtomicU16 = AtomicU16::new(0);
 
 #[derive(Debug)]
 pub struct Header {
@@ -12,13 +15,15 @@ pub struct Header {
 pub fn create(receptive: bool, bytes: &Vec<u8>) -> Vec<u8> {
     let mut header = vec![0u8; 11 + bytes.len()];
     write_date(&mut header, chrono::Utc::now().timestamp_millis() as u64);
-    write_increment(&mut header, unsafe { I });
+    write_increment(&mut header, I.load(Ordering::SeqCst));
     write_receptive(&mut header, receptive);
     write_32_at(&mut header, bytes.len() as u64, 7);
     header[11..].copy_from_slice(bytes);
-    unsafe {
-        I = if I < 0xffff { I + 1 } else { 0 };
+    let current_value = I.fetch_add(1, Ordering::SeqCst);
+    if current_value == 0xffff {
+        I.store(0, Ordering::SeqCst);
     }
+
     header
 }
 

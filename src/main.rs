@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
-#![feature(stmt_expr_attributes)]
 mod caching;
 mod canvas;
 mod mongo;
@@ -38,14 +37,18 @@ use tokio::{join, runtime, time::sleep};
 async fn main() -> Result<(), Box<dyn Error>> {
     let server = Server::new("Sofi".to_string());
 
-    let handle_message: fn(IncomingMessage) = #[allow(unused_must_use)]
-    |mut incoming_message: IncomingMessage| {
-        println!("{}: {:?}", incoming_message.id, incoming_message.data);
+    let handle_message: fn(IncomingMessage) -> Option<Payload> =
+        |incoming_message: IncomingMessage| {
+            println!("{}: {:?}", incoming_message.id, incoming_message.data);
 
-        incoming_message.reply("Hello from server!".to_string());
-    };
+            Some(Payload {
+                payload: format!("Hello {}, welcome to rust server", incoming_message.id),
+            })
+        };
 
     server.bind("127.0.0.1:3000", handle_message).await?;
+
+    // sleep(Duration::from_millis(1000 * 5)).await;
 
     // server
     //     .send(
