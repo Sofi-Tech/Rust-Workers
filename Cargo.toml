@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-lapin = { version = "2.1.1" }
 mongodb = { version = "2.0.2", default-features = false, features = [
     "async-std-runtime",
 ] }
