@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
+#![feature(stmt_expr_attributes)]
 mod caching;
 mod canvas;
 mod mongo;
@@ -29,12 +30,32 @@ use mongo::{
     Mongo,
 };
 use mongodb::Collection;
+use tcp::{IncomingMessage, Payload, Server};
 use threads::asyncpool::create_new_pool;
 use tokio::{join, runtime, time::sleep};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    tcp::start_tcp().await?;
+    let server = Server::new("Sofi".to_string());
+
+    let handle_message: fn(IncomingMessage) = #[allow(unused_must_use)]
+    |mut incoming_message: IncomingMessage| {
+        println!("{}: {:?}", incoming_message.id, incoming_message.data);
+
+        incoming_message.reply("Hello from server!".to_string());
+    };
+
+    server.bind("127.0.0.1:3000", handle_message).await?;
+
+    // server
+    //     .send(
+    //         "a".to_string(),
+    //         Payload {
+    //             payload: "Hello from rust!".to_string(),
+    //         },
+    //         Some(true),
+    //     )
+    //     .await?;
 
     // TODO: get tuple of documents from random_cards function and pass it to
     // generate_drop

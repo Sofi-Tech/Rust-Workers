@@ -34,7 +34,7 @@ for (const _ of Array(20).keys()) {
   const message = { payload: `Hello from ${name}` };
   console.log(`Sending message from ${name}:`, message);
 
-  const res = await client.sendTo('server', message);
+  const res = await client.sendTo('Sofi', message);
 
   console.log(`Received response at ${name}:`, res);
 

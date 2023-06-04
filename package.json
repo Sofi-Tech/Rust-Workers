@@ -1,7 +1,6 @@
 {
   "type": "module",
   "dependencies": {
-    "@sofidev/ipc": "^1.2.2",
-    "msgpackr": "^1.9.2"
+    "@sofidev/ipc": "^1.2.2"
   }
 }
