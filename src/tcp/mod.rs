@@ -1,33 +1,28 @@
+pub mod functions;
+pub mod message_handler;
 use std::{
     collections::{hash_map::Entry, HashMap},
     error::Error,
     sync::Arc,
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::Duration,
 };
 
-use serde::{Deserialize, Serialize};
-pub mod functions;
+use serde::Serialize;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},
-    sync::{mpsc, Mutex, MutexGuard},
-    time::sleep,
+    sync::{mpsc, Mutex},
+    time::timeout,
 };
 
-use crate::{
-    canvas,
-    tcp::functions::{create, create_from_id, read},
+use crate::tcp::{
+    functions::{create, create_from_id, read},
+    message_handler::{handle_message, IncomingMessage, Payload},
 };
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Payload {
-    pub payload: String,
-}
-
-pub struct IncomingMessage {
-    pub id: u64,
+pub struct SendOptions {
     pub receptive: bool,
-    pub data: Payload,
+    timeout: Option<Duration>,
 }
 
 #[derive(Clone, Debug)]
@@ -53,10 +48,6 @@ pub async fn handle_connection(
     let mut name = "".to_string();
 
     loop {
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Failed to get timestamp")
-            .as_secs();
         let num_bytes = client.read(&mut buffer).await?;
         if num_bytes == 0 {
             break;
@@ -72,7 +63,12 @@ pub async fn handle_connection(
 
             name = client_name.clone();
 
-            //TODO: close old one if one with same name found
+            if let Some(old_client) = server.clients.get(&client_name) {
+                let mut old_client = old_client.lock().await;
+                let _ = old_client.shutdown().await;
+            }
+
+            // TODO: fix cloning issue by using connection pool
             server.clients.insert(client_name, client_mutex.clone());
         } else {
             let message: Payload = rmp_serde::from_slice(&buffer[11..num_bytes])?;
@@ -92,16 +88,8 @@ pub async fn handle_connection(
                         receptive: header.receptive,
                         data: message,
                     };
-                    let msg = message.data.payload.clone();
-                    let mut data = Some(Payload {
-                        payload: "Nothing".to_string(),
-                    });
 
-                    if msg == "ping" {
-                        data = Some(Payload {
-                            payload: format!("pong {}", timestamp),
-                        });
-                    }
+                    let data = handle_message(message).await;
 
                     if let Some(data) = data {
                         if !header.receptive {
@@ -153,7 +141,7 @@ impl Server {
         &mut self,
         name: String,
         data: T,
-        options: Option<bool>,
+        options: Option<SendOptions>,
     ) -> Result<Option<Payload>, Box<dyn Error>>
     where
         T: Serialize,
@@ -166,7 +154,12 @@ impl Server {
         let mut client = client.lock().await;
 
         let response_data = rmp_serde::to_vec_named(&data)?;
-        let receptive = options.unwrap_or(true);
+        let options = options.unwrap_or(SendOptions {
+            receptive: true,
+            timeout: None,
+        });
+        let receptive = options.receptive;
+
         let data = create(receptive, &response_data);
 
         client.write_all(&data).await?;
@@ -178,11 +171,21 @@ impl Server {
 
         let id = read(&data).id;
 
-        // TODO: add timeout
         let (tx, mut rx) = mpsc::channel(1);
 
         self.queue.insert(id, tx);
 
-        Ok(Some(rx.recv().await.unwrap()))
+        match options.timeout {
+            Some(timeout_duration) => {
+                let result = timeout(timeout_duration, rx.recv()).await;
+
+                match result {
+                    Ok(result) => Ok(result),
+                    Err(_) => Err("Timeout occurred while waiting for response".into()),
+                }
+            }
+
+            None => Ok(rx.recv().await),
+        }
     }
 }

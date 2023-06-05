@@ -21,6 +21,12 @@ client.on('message', (message) => {
   console.log(`Received message at ${name}:`, message.data);
 });
 
+// client.on('raw', (message) => {
+//   console.log(thing);
+//   console.log(`Received raw message at ${name}:`, message);
+//   timer.timeEnd(thing, true, (t) => `Time taken: ${t}`);
+// });
+
 client.on('disconnect', () => {
   console.log('Connection lost');
 });
@@ -30,14 +36,13 @@ console.log(`${name}: Connected to Rust server`);
 
 await sleep(5000);
 const timer = new Timer();
-for (const _ of Array(20).keys()) {
+for (let i = 0; i < 100; i++) {
   // Send a message to the Rust server
   const message = { payload: `ping` };
-  const time = timer.time();
-  await client.sendTo('Sofi', message, { receptive: true }).then((res) => {
-    console.log(`Received response from Rust server:`, res.payload);
-  });
-  timer.timeEnd(time, true, (t) => `Time taken: ${t}`);
 
+  let thing = timer.time();
+  const msg = await client.sendTo('Sofi', message, { receptive: true });
+  timer.timeEnd(thing, true, (t) => `Time taken: ${t}`);
+  console.log(msg);
   // await sleep(1000);
 }

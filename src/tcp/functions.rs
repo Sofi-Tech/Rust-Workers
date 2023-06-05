@@ -1,7 +1,4 @@
-use std::{
-    sync::atomic::{AtomicU16, Ordering},
-    time::SystemTime,
-};
+use std::sync::atomic::{AtomicU16, Ordering};
 
 static I: AtomicU16 = AtomicU16::new(0);
 

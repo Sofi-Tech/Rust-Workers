@@ -16,8 +16,8 @@ pub struct Card<'a> {
     pub series: &'a str,
 }
 
-pub fn draw_card(mut canvas: Canvas, card: &Card, x: f32, y: f32, dw: f32, dh: f32) -> Canvas {
-    let mut frame = File::open(&card.frame_url).unwrap();
+pub fn draw_card(mut canvas: Canvas, card: Card, x: f32, y: f32, dw: f32, dh: f32) -> Canvas {
+    let mut frame = File::open(card.frame_url).unwrap();
     let mut frame_bytes = Vec::new();
     let gen_text = format!("G{}", card.gen);
     frame.read_to_end(&mut frame_bytes).unwrap();

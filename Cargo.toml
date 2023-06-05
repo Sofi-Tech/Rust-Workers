@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+skia-safe = { version = "0.62.0", features = ["webp-encode"] }
+ninja = "0.0.1"
 mongodb = { version = "2.0.2", default-features = false, features = [
     "async-std-runtime",
 ] }
@@ -18,14 +20,13 @@ serde = "1" # Used in the Map Data into Structs section
 dotenv = "0.15.0"
 dotenv_codegen = "0.15.0"
 rand = "0.8.5"
-skia-safe = "0.58.0"
 reqwest = { version = "0.11.13", features = [
     "blocking",
     "json",
     "default-tls",
 ] }
 image = "0.24.5"
-redis = "0.22.1"
+redis = "0.23.0"
 serde_json = "1.0"
 futures = { version = "0.3", default-features = false, features = [
     "thread-pool",
