@@ -10,19 +10,19 @@ use super::Canvas; // 0.2.21, features = ["macros"]
 
 pub struct Card<'a> {
     pub image: Vec<u8>,
-    pub frame_url: String,
+    pub element: String,
     pub gen: i32,
     pub name: &'a str,
     pub series: &'a str,
 }
 
 pub fn draw_card(mut canvas: Canvas, card: Card, x: f32, y: f32, dw: f32, dh: f32) -> Canvas {
-    let mut frame = File::open(card.frame_url).unwrap();
+    let mut frame = File::open(format!("./frames/{}-drop.png", card.element)).unwrap();
     let mut frame_bytes = Vec::new();
     let gen_text = format!("G{}", card.gen);
     frame.read_to_end(&mut frame_bytes).unwrap();
 
-    canvas.draw_image_with_size(&card.image, 6. + x, 4.0 + y, dw, dh);
+    canvas.draw_image_with_size(&card.image, 7. + x, 4. + y, dw, dh);
     canvas.draw_image(&frame_bytes, (x as i32, 0));
     canvas.fill_text(
         &gen_text,
@@ -64,7 +64,7 @@ pub fn draw_card(mut canvas: Canvas, card: Card, x: f32, y: f32, dw: f32, dh: f3
 }
 
 pub fn draw_card_ref(mut canvas: Canvas, card: &Card, x: f32, y: f32, dw: f32, dh: f32) -> Canvas {
-    let mut frame = File::open(&card.frame_url).unwrap();
+    let mut frame = File::open(format!("./frames/{}-drop.png", card.element)).unwrap();
     let mut frame_bytes = Vec::new();
     let gen_text = format!("G{}", card.gen);
     frame.read_to_end(&mut frame_bytes).unwrap();
