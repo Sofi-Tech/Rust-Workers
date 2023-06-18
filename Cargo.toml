@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-skia-safe = { version = "0.62.0" }
+skia-safe = { version = "0.62.0", features = ["webp-encode"] }
 webp = "0.2.2"
 mongodb = { version = "2.0.2", default-features = false, features = [
     "async-std-runtime",

@@ -107,12 +107,13 @@ impl Canvas {
     #[inline]
     pub fn webp(&mut self) -> Vec<u8> {
         let image = self.surface.image_snapshot();
-        let png_data = image.encode_to_data(EncodedImageFormat::PNG).unwrap();
-        let image_bytes = image::load_from_memory(png_data.as_bytes()).unwrap();
+        let png_data = image.encode_to_data(EncodedImageFormat::WEBP).unwrap();
+        // let image_bytes = image::load_from_memory(png_data.as_bytes()).unwrap();
 
-        let encoder = Encoder::from_image(&image_bytes).unwrap();
+        // let encoder = Encoder::from_image(&image_bytes).unwrap();
 
-        encoder.encode(100.).to_vec()
+        // encoder.encode(100.).to_vec()
+        png_data.as_bytes().to_vec()
     }
 
     #[inline]

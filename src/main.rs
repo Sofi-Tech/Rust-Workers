@@ -81,11 +81,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let _three_uid = _three_cards.2.get("unique_id").unwrap().as_str().unwrap();
 
         // let one = format!("{_one_uid}:character_cards:buffer");
-        let one = "235fe4a8-9607-457f-9a8b-0504e149a85c:character_cards:buffer".to_string();
+        let one = "e0d140e3-a33f-45cd-a156-661ddc921ab3:character_cards:buffer".to_string();
         // let two = format!("{_two_uid}:character_cards:buffer");
-        let two = "7281478d-3c73-4e04-acd9-8593ec912664:character_cards:buffer".to_string();
+        let two = "c09404d4-f4e2-4c9c-ba13-3c2eacf486b1:character_cards:buffer".to_string();
         // let three = format!("{_three_uid}:character_cards:buffer");
-        let three = "8c47209e-8366-490c-bd01-7e0392fbf8f9:character_cards:buffer".to_string();
+        let three = "ec153239-a238-4483-81b1-f8c38cc29eb1:character_cards:buffer".to_string();
         let images = connection.mget(vec![one, two, three]).unwrap();
 
         let image_one = deserialize_buffer(&images[0]).buffer;
