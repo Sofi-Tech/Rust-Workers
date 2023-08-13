@@ -86,7 +86,7 @@ pub async fn handle_connection(
                     let message = IncomingMessage {
                         id: header.id,
                         receptive: header.receptive,
-                        data: message,
+                        payload: message,
                     };
 
                     let data = handle_message(message).await;

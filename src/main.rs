@@ -81,11 +81,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let _three_uid = _three_cards.2.get("unique_id").unwrap().as_str().unwrap();
 
         // let one = format!("{_one_uid}:character_cards:buffer");
-        let one = "e0d140e3-a33f-45cd-a156-661ddc921ab3:character_cards:buffer".to_string();
+        let one = "8a89afd4-36c2-476b-929c-d050e83b0578:character_cards:buffer".to_string();
         // let two = format!("{_two_uid}:character_cards:buffer");
-        let two = "c09404d4-f4e2-4c9c-ba13-3c2eacf486b1:character_cards:buffer".to_string();
+        let two = "3286f1af-e030-474b-9d34-cb4249196952:character_cards:buffer".to_string();
         // let three = format!("{_three_uid}:character_cards:buffer");
-        let three = "ec153239-a238-4483-81b1-f8c38cc29eb1:character_cards:buffer".to_string();
+        let three = "3343cf53-bacd-49d0-8240-6dea019be172:character_cards:buffer".to_string();
         let images = connection.mget(vec![one, two, three]).unwrap();
 
         let image_one = deserialize_buffer(&images[0]).buffer;
@@ -146,11 +146,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
             465.0,
         );
 
-        let drop_image = canvas.webp();
+        let drop = canvas.webp();
 
         let name = format!("./out/{}.{}.webp", 1, Utc::now().timestamp_millis());
+
         let mut file = File::create(name).unwrap();
-        file.write_all(&drop_image).unwrap();
+
+        file.write_all(&drop).unwrap();
         println!("Time taken: {:?}", Instant::now() - start);
     });
 

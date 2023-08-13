@@ -15,13 +15,11 @@ impl Request {
 
     pub async fn fetch_buffer(&self, url: &str) -> Vec<u8> {
         let res = self.client.get(url).send().await.unwrap();
-        let buffer = res.bytes().await.unwrap().to_vec();
-        buffer
+        res.bytes().await.unwrap().to_vec()
     }
 }
 
 pub async fn fetch_buffer(url: &str) -> Vec<u8> {
     let res = reqwest::get(url).await.unwrap();
-    let buffer = res.bytes().await.expect("issue").to_vec();
-    buffer
+    res.bytes().await.expect("issue").to_vec()
 }

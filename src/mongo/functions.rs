@@ -1,5 +1,3 @@
-use std::time::{Duration, Instant};
-
 use mongodb::{
     bson::{doc, Document},
     options::FindOneOptions,

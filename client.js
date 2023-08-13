@@ -4,6 +4,13 @@ import { Timer } from './Timer.js';
 
 const name = process.argv[2];
 
+const Job = /**@type {const}*/ ({
+  Ping: 0,
+  Pong: 1,
+  GenerateImage: 2,
+  Unknown: 3,
+});
+
 const client = new Client(name, {
   maximumRetries: Infinity,
   retryTime: 2_000,
@@ -38,7 +45,7 @@ await sleep(5000);
 const timer = new Timer();
 for (let i = 0; i < 100; i++) {
   // Send a message to the Rust server
-  const message = { payload: `ping` };
+  const message = { payload: `ping`, job: Job.Ping };
 
   let thing = timer.time();
   const msg = await client.sendTo('Sofi', message, { receptive: true });

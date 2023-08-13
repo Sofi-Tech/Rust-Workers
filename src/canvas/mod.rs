@@ -1,13 +1,10 @@
 use std::mem;
 pub mod functions;
 pub mod request;
-use image::EncodableLayout;
 use skia_safe::{
-    image::{BitDepth, CachingHint},
-    AlphaType, Color, ColorSpace, ColorType, Data, EncodedImageFormat, Font, ISize, Image,
-    ImageGenerator, ImageInfo, Paint, PaintStyle, Path, Picture, Point, Rect, Surface,
+    Color, Data, EncodedImageFormat, Font, Image, ImageGenerator, Paint, PaintStyle, Path, Point,
+    Rect, Surface,
 };
-use webp::Encoder;
 pub struct Canvas {
     surface: Surface,
     path: Path,
@@ -107,12 +104,9 @@ impl Canvas {
     #[inline]
     pub fn webp(&mut self) -> Vec<u8> {
         let image = self.surface.image_snapshot();
-        let png_data = image.encode_to_data(EncodedImageFormat::WEBP).unwrap();
-        // let image_bytes = image::load_from_memory(png_data.as_bytes()).unwrap();
-
-        // let encoder = Encoder::from_image(&image_bytes).unwrap();
-
-        // encoder.encode(100.).to_vec()
+        let png_data = image
+            .encode_to_data_with_quality(EncodedImageFormat::WEBP, 80)
+            .unwrap();
         png_data.as_bytes().to_vec()
     }
 

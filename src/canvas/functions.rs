@@ -1,10 +1,9 @@
-use std::{cell::RefCell, fs::File, io::Read, rc::Rc};
+use std::{fs::File, io::Read};
 
 use skia_safe::{
     font_style::{Slant, Weight, Width},
     Font, FontStyle, Typeface,
 };
-use tokio;
 
 use super::Canvas; // 0.2.21, features = ["macros"]
 
