@@ -1,5 +1,3 @@
-use std::time::{Duration, Instant};
-
 use mongodb::{
     bson::{doc, Document},
     options::FindOneOptions,
@@ -9,13 +7,13 @@ use rand::Rng;
 use tokio::try_join;
 
 pub async fn get_random_cards(collection: Collection<Document>) -> (Document, Document, Document) {
-    let now = Instant::now();
+    //     let now = Instant::now();
     let size: u64 = collection.count_documents(None, None).await.unwrap();
     // let size: u64 = 38579;
     assert!(size >= 3, "Not enough cards in the database!");
     let r_numbers = random_numbers(size);
     let (one, two, three) = get_three_cards(&collection, r_numbers).await;
-    println!("get_random_cards took: {:?}", now.elapsed());
+    // println!("get_random_cards took: {:?}", now.elapsed());
     (one, two, three)
 }
 

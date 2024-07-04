@@ -10,7 +10,7 @@ use futures::{stream, StreamExt};
 use mongodb::Cursor;
 use redis::RedisError;
 use serde::{Deserialize, Serialize};
-use tokio::runtime;
+use tokio::{runtime, time::sleep};
 
 use super::Redis;
 use crate::{
@@ -34,13 +34,15 @@ pub struct CardStruct {
 pub async fn start_db_caching(mut cards: Cursor<Document>, wild_key: &str) {
     let rt = runtime::Builder::new_multi_thread()
         .thread_name("Caching-Thread")
-        .worker_threads(100)
+        .worker_threads(1000)
         .enable_all()
         .build()
         .unwrap();
-
+    // 54090
     let mut card_vec: Vec<CardStruct> = Vec::new();
-    while cards.advance().await.unwrap() {
+    let redis_connection = caching::Redis::new().unwrap();
+
+    while cards.advance().await.expect("something went wrong") {
         let url = cards
             .current()
             .get("url")
@@ -61,18 +63,23 @@ pub async fn start_db_caching(mut cards: Cursor<Document>, wild_key: &str) {
             url: url.to_string(),
             key_name: key_name.to_string(),
         };
-        card_vec.push(card);
+        if !redis_connection.exists(&card.key_name).unwrap() {
+            card_vec.push(card);
+        }
+        // 54090
         println!("size: {}", card_vec.len());
     }
+    // concurrent(card_vec).await;
     with_runtime(&rt, card_vec).await;
+    sleep(Duration::from_millis(1000 * 60 * 10)).await;
 }
 
 pub fn serialize_buffer(value: BufferInstance) -> String {
     serde_json::to_string(&value).unwrap()
 }
 
-pub fn deserialize_buffer(value: String) -> BufferInstance {
-    serde_json::from_str(&value).unwrap()
+pub fn deserialize_buffer(value: &str) -> BufferInstance {
+    serde_json::from_str(value).unwrap()
 }
 
 async fn concurrent(card_vec: Vec<CardStruct>) {
@@ -100,17 +107,22 @@ async fn concurrent(card_vec: Vec<CardStruct>) {
             Err(_) => println!("ERROR downloading {}", card.url),
         }
     }))
-    .buffer_unordered(12)
+    .buffer_unordered(50)
     .collect::<Vec<()>>();
     println!("Waiting...");
     fetches.await;
 }
 
-async fn with_runtime(rt: &runtime::Runtime, card_vec: Vec<CardStruct>) {
+async fn with_runtime(rt: &runtime::Runtime, card_vec: Vec<CardStruct>) -> &runtime::Runtime {
     let redis_connection = caching::Redis::new().unwrap();
     for (i, card) in card_vec.iter().enumerate() {
         let redis_clone = redis_connection.copy();
         let key_name = card.key_name.clone();
+        // continue if key_name exists in redis
+        if redis_clone.exists(&key_name).unwrap() {
+            println!("continue");
+            continue;
+        }
         let url = card.url.clone();
         let handle = rt.spawn(async move {
             let time = Instant::now();
@@ -128,9 +140,6 @@ async fn with_runtime(rt: &runtime::Runtime, card_vec: Vec<CardStruct>) {
             redis_clone.set(key_name, serialized_buffer).unwrap();
         });
         let _ = tokio::time::timeout(Duration::from_millis(0), handle).await;
-        // if i == 1 {
-        //     // sleep(Duration::from_millis(1000 * 60)).await;
-        //     break;
-        // }
     }
+    rt
 }

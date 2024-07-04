@@ -3,13 +3,23 @@ pub mod functions;
 pub mod request;
 use skia_safe::{
     Color, Data, EncodedImageFormat, Font, Image, ImageGenerator, Paint, PaintStyle, Path, Point,
-    Surface,
+    Rect, Surface,
 };
-
 pub struct Canvas {
     surface: Surface,
     path: Path,
     paint: Paint,
+}
+
+pub struct Size {
+    pub width: f32,
+    pub height: f32,
+}
+
+impl Size {
+    pub fn new(width: f32, height: f32) -> Size {
+        Size { width, height }
+    }
 }
 
 impl Canvas {
@@ -92,9 +102,12 @@ impl Canvas {
     }
 
     #[inline]
-    pub fn data(&mut self) -> Data {
+    pub fn webp(&mut self) -> Vec<u8> {
         let image = self.surface.image_snapshot();
-        image.encode_to_data(EncodedImageFormat::PNG).unwrap()
+        let png_data = image
+            .encode_to_data_with_quality(EncodedImageFormat::WEBP, 80)
+            .unwrap();
+        png_data.as_bytes().to_vec()
     }
 
     #[inline]
@@ -112,11 +125,28 @@ impl Canvas {
         self.paint.set_color(color);
     }
 
-    #[inline]
     pub fn draw_image(&mut self, data: &[u8], left_top: impl Into<Point>) {
         let img_g = ImageGenerator::from_encoded(Data::new_copy(data)).unwrap();
         let img = Image::from_generator(img_g).unwrap();
         self.surface.canvas().draw_image(img, left_top, None);
+    }
+
+    #[inline]
+    pub fn draw_image_with_size(&mut self, data: &[u8], x: f32, y: f32, dw: f32, dh: f32) {
+        let img = self.get_image_from_data(Data::new_copy(data));
+        if img.width() == dw as i32 && img.height() == dh as i32 {
+            self.surface.canvas().draw_image(img, (x, y), None);
+            return;
+        }
+        self.surface
+            .canvas()
+            .draw_image_rect(img, None, Rect::new(x, y, x + dw, dh), &self.paint);
+    }
+
+    #[inline]
+    pub fn get_image_from_data(&mut self, data: Data) -> Image {
+        let img_g = ImageGenerator::from_encoded(Data::new_copy(&data)).unwrap();
+        Image::from_generator(img_g).unwrap()
     }
 
     pub fn fill_text(&mut self, text: &str, origin: impl Into<Point>, font: &Font) {
